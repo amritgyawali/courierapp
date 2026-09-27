@@ -1,65 +1,68 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
-import '@/global.css';
-
 import { Platform } from 'react-native';
 
 export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-  },
-} as const;
-
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
+  red: '#DC1E35',
+  redPressed: '#B7182B',
+  redDotInactive: '#F8B4B4',
+  black: '#111827',
+  text: '#1F2937',
+  textMuted: '#6B7280',
+  placeholder: '#6B7280',
+  border: '#E5E7EB',
+  divider: '#F3F4F6',
+  inputBg: '#EEEEF0',
+  grayButton: '#BFBFBF',
+  grayButtonSoft: '#E4E6EA',
+  screenBg: '#F4F4F6',
+  screenBgAlt: '#EDEDED',
+  white: '#FFFFFF',
+  illustration: '#ADB5BD',
+  link: '#2563EB',
+  navy: '#1B2A4A',
+  skyline: '#A8AFB8',
+};
 
 export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
+  ios: { sans: 'System' },
+  android: { sans: 'sans-serif' },
   default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
+    sans: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
   },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
-});
+})!;
 
-export const Spacing = {
-  half: 2,
-  one: 4,
-  two: 8,
-  three: 16,
-  four: 24,
-  five: 32,
-  six: 64,
-} as const;
+/**
+ * Cross-platform drop shadow as a CSS `boxShadow` string. React Native renders it natively on
+ * iOS and Android (New Architecture) and on web, replacing the deprecated `shadow*` and
+ * `elevation` props.
+ */
+export function shadow(offsetY: number, blur: number, opacity: number, color = '#000000') {
+  const hex = color.replace('#', '');
+  const full = hex.length === 3 ? [...hex].map((c) => c + c).join('') : hex;
+  const n = Number.parseInt(full, 16);
+  return `0px ${offsetY}px ${blur}px rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${opacity})`;
+}
 
-export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
-export const MaxContentWidth = 800;
+export const cardShadow = { boxShadow: shadow(1, 6, 0.06) };
+
+/** Palette for the vendor portal (screens in `vendor ui-ux`), which uses a deeper crimson. */
+export const VendorColors = {
+  red: '#C0143C',
+  redPressed: '#A30F32',
+  redTint: '#FDF2F4',
+  redTintBorder: '#F5C2CB',
+  redSoft: '#FDECEF',
+  navy: '#1E3A5F',
+  screenBg: '#F5F6FA',
+  card: '#FFFFFF',
+  cardBorder: '#F0F1F4',
+  text: '#1F2937',
+  textStrong: '#111827',
+  muted: '#6B7280',
+  faint: '#9CA3AF',
+  divider: '#F1F2F4',
+  blue: '#4361EE',
+  green: '#22C55E',
+  greenDark: '#19A56F',
+  amber: '#F59E0B',
+  rose: '#E11D48',
+};

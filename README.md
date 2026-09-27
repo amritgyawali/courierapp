@@ -1,56 +1,63 @@
-# Welcome to your Expo app 👋
+# Karnali Smart Group — Mobile App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+React Native + Expo (SDK 57, Expo Router) app built from the designs in `../app ui-ux`.
 
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Run
 
 ```bash
-npm run reset-project
+npm install
+npx expo start        # scan the QR code with Expo Go (Android / iOS)
+npx expo start --web  # browser preview (maps fall back to an OpenStreetMap embed)
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Screen flow
 
-### Other setup steps
+| # | Design | Route |
+|---|--------|-------|
+| 1 | Login | `/login` |
+| 2 | Register | `/register` |
+| 3 | Search | removed — sign in / sign up opens Track |
+| 4 | Track | `/track` (first screen after sign in) |
+| 5 | Add tracking modal | FAB on `/track` |
+| 6 | My KSG account | `/account` |
+| 7 | My Account details | `/account-details` |
+| 8 | Find Us map | `/find-us` |
+| 9 | Details Form | `/details-form` (FAB on Account details) |
+| 10 | Notify me by | `/notify` (Account → Notification Preferences) |
+| 11 | More | `/more` |
+| 12 | Leave eligible parcels | `/delivery-preferences` (Account → Delivery Preferences) |
+| 13 | Offers | `/offers` |
+| 14 | Search KSG Branches | `/branches` (More → Branch List) |
+| 15 | Services | `/services` |
+| 16 | Contact Us | `/contact` |
+| 17 | About Us | `/about` |
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Vendor portal
 
-## Learn more
+Sign in with **Vendor** selected to open the vendor app (designs in `../vendor ui-ux`):
 
-To learn more about developing your project with Expo, look at the following resources:
+| # | Design | Route |
+|---|--------|-------|
+| 1 | Dashboard | `/vendor` |
+| 2 | Orders | `/vendor/orders` |
+| 3 | Accounts | `/vendor/accounts` |
+| 4 | Actions | `/vendor/actions` |
+| 5 | Reports | `/vendor/reports` |
+| 6 | Navigation drawer | ☰ on any vendor screen |
+| 7 | Resources | `/vendor/resources` (drawer) |
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Code: `src/app/vendor/` (routes), `src/components/vendor/` (header, chips, drawer, tab bar, icons), `src/data/vendor.ts` (sample data + totals), `src/state/vendor-state.tsx`.
 
-## Join the community
+## Structure
 
-Join our community of developers creating universal apps.
+- `src/app/` — routes (Expo Router). `(tabs)/` holds Track / Find Us / Account / More.
+- `src/components/` — header, inputs, buttons, tab bar, SVG icons, brand logo, maps.
+- `src/data/` — branches, provinces/districts, services, about and contact content.
+- `src/state/app-state.tsx` — app state persisted with AsyncStorage.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Not wired to a backend yet
+
+- Sign in / register only validate input locally — connect them to the KSG auth API.
+- Tracking numbers are stored on the device; no live status is fetched.
+- `src/data/branches.ts` is sample data with approximate town coordinates — replace with the branch API.
+- Before a store build, add a Google Maps API key for Android (`react-native-maps` config plugin) and replace the Expo placeholder icon/splash images in `assets/images`.
