@@ -14,15 +14,51 @@ This is the Karnali Smart Group courier mobile app, built with React Native and 
 | 17 screens (UI + navigation) | Done — not yet tested |
 | Shared components (header, inputs, buttons, tab bar, icons, logo) | Done |
 | Vendor portal (7 designed screens) | Done |
-| Admin portal (50 features) | Done — sample data |
+| Admin portal (50 features + Branding & Appearance) | Done — sample data |
+| Runtime theming (brand colour, font, text size, logos, app name) | Done — stored on the device |
 | Rider portal | Done — sample data |
 | Data saved on the device | Done |
 | Dependency install | Done |
-| Extra native packages (maps, svg, storage, date picker) | Done |
+| Extra native packages (maps, svg, storage, date picker, image picker/manipulator, Google Fonts) | Done |
 | Typecheck / lint / expo-doctor / bundle build | Done — all pass |
 | Run on phone | **Not done** |
 | Backend / API connection | **Not started** |
-| App icon, splash screen, store build | **Not started** |
+| App icon, splash screen | Done — teal brand mark (replace with final artwork if needed) |
+| Store build | **Not started** |
+
+---
+
+## Update 2026-09-28 — new look, white-label branding, Hasta Pun
+
+**Look and feel**
+- The red theme is replaced by a calm **teal** (`#0F766E`) that keeps white text readable (contrast 5.5:1). Errors, failures and log out stay red, success stays green, so status colours still mean the same thing.
+- New font: **Plus Jakarta Sans** everywhere (Poppins, Nunito or the system font can be chosen in Branding).
+- Tab bars show a soft pill behind the active tab; headers, chips, buttons, drawers, charts and map pins all follow the brand colour.
+- New launcher icon, Android adaptive icon, iOS icon, splash image and favicon (white brand mark on teal).
+
+**Admin → Branding & Appearance** (`/admin/branding`, in the drawer and linked from Settings)
+- App name, short name and tagline; brand logo and app icon upload (resized and stored on the device).
+- Theme colour: 8 presets or any hex colour, with a live preview; too-light colours are darkened automatically.
+- Font family and text size (Compact / Default / Large).
+- Contact phone, emails, address, website and social links used by Contact Us and About Us.
+- Save / Discard bar, Reset to defaults, and every change is written to the Audit Log.
+- Admins can edit their own name and email in Settings → Edit.
+
+**Names and IDs**
+- "Trending Shop Nepal" is now **Hasta Pun** (vendor shop and the matching admin merchant). The customer, the vendor owner and the Super Admin are all named **Hasta Pun**. Change them in one place: `src/constants/identity.ts`, or in the app (Account Details, Vendor → Profile, Admin → Settings).
+- The vendor ID is a **random 6-digit number** generated on first launch and kept after that. Data saved by the earlier build is migrated automatically (old names and ID `16500` are replaced).
+- The Rider demo account is still Ramesh Thapa (R-101).
+
+**Fixes**
+- Opening Shipments, Fleet, Merchants, Finance, Tasks or vendor Orders with an unknown `filter` / `tab` / `status` in the link no longer crashes the screen.
+- Sample data no longer contains events dated in the future (a parcel booked late yesterday "delivered" tomorrow).
+- Merchant success rate no longer divides by zero when every parcel is cancelled.
+- New ids (audit entries, deposits, announcements, staff) can no longer collide with ids saved before a restart.
+- Admin Settings no longer shows stale values after "Reset demo data".
+- Error text, failed attempts and log out use red instead of the brand colour.
+- Every external link (phone, email, maps, social) handles failures instead of throwing.
+
+**Checks run:** typecheck, lint, `expo-doctor` (21/21), Android and web bundles, and a headless browser pass over 50 screens (no console errors) plus an end-to-end test of the branding, admin profile and vendor profile flows.
 
 ---
 
@@ -36,7 +72,7 @@ This is the Karnali Smart Group courier mobile app, built with React Native and 
 | 2 | karnali_smart_group_register_screen | `src/app/register.tsx` | Login → Register |
 | 3 | karnali_smart_group_search_screen | — (removed on request, 2026-09-28) | — |
 | 4 | karnali_smart_group_track_screen | `src/app/(tabs)/track.tsx` | First screen after Sign In / Sign Up |
-| 5 | screen_5 add_tracking_modal | `src/components/add-tracking-modal.tsx` | Red + button on Track |
+| 5 | screen_5 add_tracking_modal | `src/components/add-tracking-modal.tsx` | + button on Track |
 | 6 | screen_6 my_ksg_account | `src/app/(tabs)/account.tsx` | Account tab |
 | 7 | screen_7 my_account_details | `src/app/account-details.tsx` | Account → Account Details |
 | 8 | screen_8 find_us_map_screen | `src/app/(tabs)/find-us.tsx` | Find Us tab |
@@ -76,7 +112,7 @@ What works:
 
 ### Admin portal (sign in as **Admin**)
 
-Built in the same style as the vendor portal: crimson header, drawer, 5 bottom tabs (Dashboard, Shipments, Dispatch, Fleet, Finance). Everything else is in the drawer, grouped into Overview, Operations, Network, Finance and Administration. Code: `src/app/admin/`.
+Built in the same style as the vendor portal: brand-coloured header, drawer, 5 bottom tabs (Dashboard, Shipments, Dispatch, Fleet, Finance). Everything else is in the drawer, grouped into Overview, Operations, Network, Finance and Administration. Code: `src/app/admin/`.
 
 The 50 admin features (modelled on what courier operations apps provide):
 
@@ -158,15 +194,15 @@ Same style; 5 bottom tabs (Home, Tasks, Route, Wallet, Account) plus a drawer. C
 - `src/state/ops-state.tsx`: one store for Admin and Rider. Every change goes through a typed action, admin actions are written to the audit log, and data is saved on the phone.
 - `src/components/portal/`: the shared design kit used by Vendor, Admin and Rider (header, drawer, tab bar, chips, cards, sheets, charts, scanner, slide-to-confirm, toasts).
 - Customer **Track** now shows the live status of any tracking number that matches a shipment.
-- The Admin role uses the account "Sunita Karki (Super Admin)", and the Rider role uses "Ramesh Thapa (R-101)", until real logins exist.
+- The Admin role uses the account "Hasta Pun (Super Admin)", and the Rider role uses "Ramesh Thapa (R-101)", until real logins exist.
 
 ### Features that work in the code
 
 - **Login / Register:** account type selector on Login (Customer / Vendor / Admin, saved with the session), email and password checks, show/hide password, error messages, "Forgot Password?" hint. Register always creates a Customer account.
 - **Auth routing:** `Stack.Protected` guards in `src/app/_layout.tsx`. Signing in or up opens the Track tab; signing out opens Login; signed-out users cannot open app screens and signed-in users cannot go back to Login.
-- **Bottom tabs:** Track, Find Us, Account and More, with the red active tab as in the designs.
+- **Bottom tabs:** Track, Find Us, Account and More, with the active tab in the brand colour.
 - **Track:** empty-state artwork, add tracking numbers through the pop-up (duplicates are blocked), list of tracked parcels, delete a parcel.
-- **Find Us:** map of Nepal with red branch pins, search box that zooms to a branch, zoom + / − buttons.
+- **Find Us:** map of Nepal with brand-coloured branch pins, search box that zooms to a branch, zoom + / − buttons.
 - **Account:** menu rows, Sign out, Nepal skyline artwork.
 - **Account Details:** empty state until the form is filled in, then a summary of your details.
 - **Details Form:** Name, Surname, Date of birth (date picker), Email, Province → District lists (all 7 provinces and 77 districts), Municipality, Ward No. Saves as you type.
@@ -220,7 +256,8 @@ Same style; 5 bottom tabs (Home, Tasks, Route, Wallet, Account) plus a drawer. C
 - [ ] **Vendor API:** replace the `SAMPLE_*` data in `src/data/vendor.ts` (profile, orders, payments, comments) with the KSG vendor API. Screens already calculate every total from these records.
 - [ ] **Vendor extras:** create order, price list, package codes, tickets, customers and staff management need API endpoints and designs.
 - [ ] **Operations API (Admin + Rider):** replace `createSampleOps()` in `src/data/ops.ts` and the store in `src/state/ops-state.tsx` with the KSG operations API. The screens only use the types and calculations in `ops.ts`.
-- [ ] **Staff and rider logins:** map the signed-in account to the real staff member or rider (today Admin = Sunita Karki, Rider = Ramesh Thapa).
+- [ ] **Staff and rider logins:** map the signed-in account to the real staff member or rider (today Admin = Hasta Pun, Rider = Ramesh Thapa).
+- [ ] **Branding:** save the Branding & Appearance settings on the server so every user and device sees the same name, logo and colours (today they are stored on the device where the admin saved them).
 - [ ] **Delivery OTP by SMS:** send the receiver their OTP by SMS. The rider screen shows it as a "Demo build" hint until then.
 - [ ] **Forgot Password:** connect to the password-reset API.
 - [ ] **Tracking:** Track already shows live status for tracking numbers that exist in the operations data; switch it to the tracking API.
@@ -232,7 +269,7 @@ Same style; 5 bottom tabs (Home, Tasks, Route, Wallet, Account) plus a drawer. C
 ### C. Before publishing to the Play Store / App Store
 
 - [ ] Add a Google Maps API key for Android (react-native-maps config in `app.json`)
-- [ ] Replace the Expo placeholder app icon and splash images in `assets/images/` with the KSG logo
+- [x] App icon, adaptive icon, splash and favicon now use the teal brand mark (swap in final artwork if the company has one)
 - [ ] Set up EAS Build (`npx eas-cli@latest build`)
 - [ ] Test on real Android and iPhone devices
 

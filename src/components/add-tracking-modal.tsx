@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { TicketIcon } from '@/components/icons';
+import { Text, TextInput } from '@/components/text';
 import { Button } from '@/components/ui';
-import { Colors, shadow } from '@/constants/theme';
+import { makeStyles, shadow } from '@/theme';
 
 export function AddTrackingModal({
   visible,
@@ -15,6 +16,7 @@ export function AddTrackingModal({
   /** Return false to keep the dialog open (e.g. duplicate number). */
   onAdd: (number: string) => boolean;
 }) {
+  const styles = useStyles();
   const [value, setValue] = useState('');
   const [error, setError] = useState('');
 
@@ -66,10 +68,10 @@ export function AddTrackingModal({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: C.overlay,
     justifyContent: 'center',
     paddingHorizontal: 16,
   },
@@ -100,7 +102,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     outlineWidth: 0,
   },
-  error: { color: Colors.red, fontSize: 13, marginTop: 8 },
+  error: { color: C.danger, fontSize: 13, marginTop: 8 },
   actions: { flexDirection: 'row', gap: 12, marginTop: 24 },
   action: { flex: 1, paddingVertical: 12 },
-});
+}));

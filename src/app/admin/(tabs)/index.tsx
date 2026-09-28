@@ -1,6 +1,6 @@
 import { type Href, router } from 'expo-router';
 import { type ReactNode, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import { useAdmin } from '@/components/admin/use-admin';
 import {
@@ -24,11 +24,14 @@ import {
 import { ScannerModal } from '@/components/portal/scanner';
 import { Card, HeaderIconButton, PortalHeader, SectionHeading } from '@/components/portal/ui';
 import { Avatar, BarChart, ProgressBar, ProgressRing, StatTile, useNow, useToast } from '@/components/portal/widgets';
-import { PortalColors as C, shadow } from '@/constants/theme';
+import { Text, TextInput } from '@/components/text';
 import { approvals, dailyVolume, DUTY_META, financeSummary, hubStats, riderStats, successRate, todaySummary } from '@/data/ops';
-import { formatDate, formatRs, formatShortDate, greeting } from '@/utils/format';
+import { makeStyles, shadow, useColors } from '@/theme';
+import { formatDate, formatRs, formatShortDate, greeting, initials } from '@/utils/format';
 
 export default function AdminDashboard() {
+  const styles = useStyles();
+  const C = useColors();
   const { data, me, lookup } = useAdmin();
   const toast = useToast();
   const now = useNow(60000);
@@ -84,13 +87,7 @@ export default function AdminDashboard() {
         {/* Greeting */}
         <View style={styles.greeting}>
           <View style={styles.greetingAvatar}>
-            <Text style={styles.greetingInitials}>
-              {me.name
-                .split(' ')
-                .map((w) => w[0])
-                .join('')
-                .slice(0, 2)}
-            </Text>
+            <Text style={styles.greetingInitials}>{initials(me.name)}</Text>
           </View>
           <View style={styles.flex}>
             <Text style={styles.greetingTitle}>
@@ -116,7 +113,7 @@ export default function AdminDashboard() {
             accessibilityLabel="Search shipments"
           />
           <Pressable accessibilityRole="button" accessibilityLabel="Scan parcel" hitSlop={8} onPress={() => setScanning(true)}>
-            <ScanIcon size={20} color={C.red} />
+            <ScanIcon size={20} color={C.primary} />
           </Pressable>
         </View>
 
@@ -157,12 +154,12 @@ export default function AdminDashboard() {
         </View>
         <View style={styles.row}>
           <StatTile
-            icon={<DispatchIcon size={20} color={C.red} />}
-            tint={C.redSoft}
+            icon={<DispatchIcon size={20} color={C.primary} />}
+            tint={C.primarySoft}
             value={today.unassigned}
             label="Unassigned"
             note="Needs a rider"
-            noteColor={C.red}
+            noteColor={C.primary}
             onPress={() => router.navigate('/admin/dispatch')}
           />
           <StatTile
@@ -177,7 +174,7 @@ export default function AdminDashboard() {
         </View>
 
         {/* Performance */}
-        <SectionHeading icon={<ReportIcon size={20} color={C.red} filled />} title="Performance (7 days)" />
+        <SectionHeading icon={<ReportIcon size={20} color={C.primary} filled />} title="Performance (7 days)" />
         <Card style={styles.perf}>
           <ProgressRing value={week.rate} label="success" color={week.rate >= 90 ? '#16A34A' : week.rate >= 75 ? C.amber : '#DC2626'} />
           <View style={styles.perfStats}>
@@ -196,13 +193,13 @@ export default function AdminDashboard() {
               values: [d.booked, d.delivered],
               highlight: i === volume.length - 1,
             }))}
-            colors={[C.red, '#16A34A']}
+            colors={[C.primary, '#16A34A']}
             legend={['Booked', 'Delivered']}
           />
         </Card>
 
         {/* Money */}
-        <SectionHeading icon={<WalletIcon size={20} color={C.red} />} title="Money" />
+        <SectionHeading icon={<WalletIcon size={20} color={C.primary} />} title="Money" />
         <View style={styles.row}>
           <MoneyTile label="Revenue today" value={formatRs(today.chargesToday)} color="#0F766E" />
           <MoneyTile label="COD collected today" value={formatRs(today.codToday)} color="#16A34A" />
@@ -212,24 +209,24 @@ export default function AdminDashboard() {
           <MoneyTile
             label="Payouts pending"
             value={formatRs(finance.payoutsPendingAmount)}
-            color={C.red}
+            color={C.primary}
             onPress={() => router.navigate({ pathname: '/admin/finance', params: { tab: 'payouts' } })}
           />
         </View>
 
         {/* Needs attention */}
-        <SectionHeading icon={<AlertTriangleIcon size={20} color={C.red} />} title="Needs attention" />
+        <SectionHeading icon={<AlertTriangleIcon size={20} color={C.primary} />} title="Needs attention" />
         <Card>
           <AttentionRow icon={<BikeIcon size={19} color="#4F46E5" />} tint="#EEF2FF" label="Rider KYC to review" count={pending.riders} href={{ pathname: '/admin/riders', params: { filter: 'kyc' } }} />
           <AttentionRow icon={<StoreSmallIcon size={19} color="#0369A1" />} tint="#E0F2FE" label="Merchant KYC to review" count={pending.merchants} href={{ pathname: '/admin/merchants', params: { filter: 'pending' } }} />
           <AttentionRow icon={<WalletIcon size={19} color="#B45309" />} tint="#FEF3C7" label="COD deposits to verify" count={pending.deposits} href={{ pathname: '/admin/finance', params: { tab: 'deposits' } }} />
-          <AttentionRow icon={<MessageIcon size={19} color={C.red} />} tint={C.redSoft} label="Open support tickets" count={pending.tickets} href="/admin/tickets" />
+          <AttentionRow icon={<MessageIcon size={19} color={C.primary} />} tint={C.primarySoft} label="Open support tickets" count={pending.tickets} href="/admin/tickets" />
           <AttentionRow icon={<AlertTriangleIcon size={19} color="#DC2626" />} tint="#FEF2F2" label="Failed deliveries to resolve" count={today.failed} href="/admin/exceptions" last />
         </Card>
 
         {/* Riders */}
         <SectionHeading
-          icon={<BikeIcon size={20} color={C.red} />}
+          icon={<BikeIcon size={20} color={C.primary} />}
           title="Top riders today"
           right={
             <Pressable accessibilityRole="button" onPress={() => router.navigate('/admin/riders')} hitSlop={8}>
@@ -262,7 +259,7 @@ export default function AdminDashboard() {
 
         {/* Hubs */}
         <SectionHeading
-          icon={<CubeIcon size={20} color={C.red} />}
+          icon={<CubeIcon size={20} color={C.primary} />}
           title="Hub load today"
           right={
             <Pressable accessibilityRole="button" onPress={() => router.navigate('/admin/hubs')} hitSlop={8}>
@@ -285,12 +282,12 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Quick actions */}
-        <SectionHeading icon={<DispatchIcon size={20} color={C.red} />} title="Quick actions" />
+        <SectionHeading icon={<DispatchIcon size={20} color={C.primary} />} title="Quick actions" />
         <View style={styles.actions}>
-          <QuickAction icon={<DispatchIcon size={22} color={C.red} />} label="Assign parcels" onPress={() => router.navigate('/admin/dispatch')} />
-          <QuickAction icon={<MegaphoneOutlineIcon size={22} color={C.red} />} label="Broadcast" onPress={() => router.navigate('/admin/announcements')} />
-          <QuickAction icon={<CalculatorOutlineIcon size={22} color={C.red} />} label="Rate calculator" onPress={() => router.navigate('/admin/rates')} />
-          <QuickAction icon={<DownloadIcon size={22} color={C.red} />} label="Export report" onPress={() => router.navigate('/admin/reports')} />
+          <QuickAction icon={<DispatchIcon size={22} color={C.primary} />} label="Assign parcels" onPress={() => router.navigate('/admin/dispatch')} />
+          <QuickAction icon={<MegaphoneOutlineIcon size={22} color={C.primary} />} label="Broadcast" onPress={() => router.navigate('/admin/announcements')} />
+          <QuickAction icon={<CalculatorOutlineIcon size={22} color={C.primary} />} label="Rate calculator" onPress={() => router.navigate('/admin/rates')} />
+          <QuickAction icon={<DownloadIcon size={22} color={C.primary} />} label="Export report" onPress={() => router.navigate('/admin/reports')} />
         </View>
       </ScrollView>
 
@@ -300,6 +297,7 @@ export default function AdminDashboard() {
 }
 
 function PerfLine({ label, value, color }: { label: string; value: number; color: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.perfLine}>
       <View style={[styles.perfDot, { backgroundColor: color }]} />
@@ -310,6 +308,7 @@ function PerfLine({ label, value, color }: { label: string; value: number; color
 }
 
 function MoneyTile({ label, value, color, onPress }: { label: string; value: string; color: string; onPress?: () => void }) {
+  const styles = useStyles();
   return (
     <Pressable
       accessibilityRole={onPress ? 'button' : undefined}
@@ -340,6 +339,8 @@ function AttentionRow({
   href: Href;
   last?: boolean;
 }) {
+  const styles = useStyles();
+  const C = useColors();
   return (
     <Pressable
       accessibilityRole="button"
@@ -357,6 +358,7 @@ function AttentionRow({
 }
 
 function QuickAction({ icon, label, onPress }: { icon: ReactNode; label: string; onPress: () => void }) {
+  const styles = useStyles();
   return (
     <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.quick, pressed && styles.pressed]}>
       <View style={styles.quickIcon}>{icon}</View>
@@ -367,13 +369,13 @@ function QuickAction({ icon, label, onPress }: { icon: ReactNode; label: string;
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   pressed: { opacity: 0.75 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   content: { padding: 14, gap: 12, paddingBottom: 40 },
   greeting: {
-    backgroundColor: C.red,
+    backgroundColor: C.primary,
     borderRadius: 14,
     padding: 16,
     flexDirection: 'row',
@@ -431,11 +433,11 @@ const styles = StyleSheet.create({
   attentionDivider: { borderBottomWidth: 1, borderBottomColor: C.divider },
   attentionIcon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   attentionLabel: { flex: 1, fontSize: 14, fontWeight: '600', color: C.text },
-  countPill: { minWidth: 28, paddingHorizontal: 8, height: 24, borderRadius: 12, backgroundColor: C.red, alignItems: 'center', justifyContent: 'center' },
+  countPill: { minWidth: 28, paddingHorizontal: 8, height: 24, borderRadius: 12, backgroundColor: C.primary, alignItems: 'center', justifyContent: 'center' },
   countPillZero: { backgroundColor: '#E5E7EB' },
   countText: { color: '#FFFFFF', fontWeight: '800', fontSize: 12 },
   countTextZero: { color: C.muted },
-  link: { fontSize: 13, fontWeight: '700', color: C.red },
+  link: { fontSize: 13, fontWeight: '700', color: C.primary },
   riderRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12 },
   divider: { borderTopWidth: 1, borderTopColor: C.divider },
   rank: { width: 26, fontSize: 13, fontWeight: '800', color: C.faint },
@@ -462,6 +464,6 @@ const styles = StyleSheet.create({
     gap: 8,
     boxShadow: shadow(1, 6, 0.05),
   },
-  quickIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: C.redTint, alignItems: 'center', justifyContent: 'center' },
+  quickIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: C.primaryTint, alignItems: 'center', justifyContent: 'center' },
   quickLabel: { fontSize: 12, fontWeight: '600', color: C.text, textAlign: 'center' },
-});
+}));

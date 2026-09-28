@@ -1,13 +1,15 @@
 import { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BranchMap, NEPAL_REGION, branchToPoint, type MapPoint } from '@/components/branch-map';
 import { CloseIcon, SearchIcon } from '@/components/icons';
-import { Colors, shadow } from '@/constants/theme';
+import { TextInput } from '@/components/text';
 import { filterBranches } from '@/data/branches';
+import { shadow, useColors } from '@/theme';
 
 export default function FindUsScreen() {
+  const C = useColors();
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
   const [focus, setFocus] = useState<MapPoint | null>(null);
@@ -41,7 +43,7 @@ export default function FindUsScreen() {
             value={query}
             onChangeText={setQuery}
             placeholder="Search"
-            placeholderTextColor={Colors.placeholder}
+            placeholderTextColor={C.placeholder}
             style={styles.input}
             returnKeyType="search"
             onSubmitEditing={search}

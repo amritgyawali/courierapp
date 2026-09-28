@@ -1,10 +1,11 @@
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { useState } from 'react';
-import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, View } from 'react-native';
 
 import { CalendarIcon } from '@/components/icons';
+import { Text } from '@/components/text';
 import { IconInput } from '@/components/ui';
-import { Colors } from '@/constants/theme';
+import { makeStyles } from '@/theme';
 
 const toIso = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -24,6 +25,7 @@ export function DateField({
   onChange: (v: string) => void;
   placeholder: string;
 }) {
+  const styles = useStyles();
   const [iosOpen, setIosOpen] = useState(false);
   const [draft, setDraft] = useState(fromIso(value));
 
@@ -91,13 +93,13 @@ export function DateField({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   container: { backgroundColor: '#F1F3F5', minHeight: 54 },
   row: { flexDirection: 'row', alignItems: 'center', borderRadius: 12, paddingHorizontal: 16 },
   icon: { marginRight: 14, width: 24, alignItems: 'center' },
   text: { fontSize: 15, color: '#1F2937' },
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+  backdrop: { flex: 1, backgroundColor: C.overlay, justifyContent: 'flex-end' },
   sheet: { backgroundColor: '#FFFFFF', borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 16, paddingBottom: 32 },
-  done: { backgroundColor: Colors.red, borderRadius: 8, paddingVertical: 12, alignItems: 'center', marginTop: 8 },
-  doneText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
-});
+  done: { backgroundColor: C.primary, borderRadius: 8, paddingVertical: 12, alignItems: 'center', marginTop: 8 },
+  doneText: { color: C.onPrimary, fontSize: 16, fontWeight: '600' },
+}));

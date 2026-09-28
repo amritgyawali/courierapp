@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { useAdmin } from '@/components/admin/use-admin';
 import { Chip } from '@/components/portal/ui';
 import { Avatar, Sheet, useToast } from '@/components/portal/widgets';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { DUTY_META, operatingHubId, type Shipment, suggestRiders } from '@/data/ops';
+import { makeStyles } from '@/theme';
 
 /**
  * Pick a rider for one or more parcels. Riders of the parcels' hub are suggested first, online
@@ -22,6 +23,7 @@ export function AssignSheet({
   onClose: () => void;
   onAssigned?: () => void;
 }) {
+  const styles = useStyles();
   const { data, dispatch, actor, lookup } = useAdmin();
   const toast = useToast();
   const [allHubs, setAllHubs] = useState(false);
@@ -84,7 +86,7 @@ export function AssignSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   chips: { flexDirection: 'row', gap: 8 },
   empty: { fontSize: 13, color: C.muted, paddingVertical: 12 },
@@ -97,7 +99,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#EEF0F3',
   },
-  rowPressed: { backgroundColor: C.redTint, borderColor: '#F4C8D2' },
+  rowPressed: { backgroundColor: C.primaryTint, borderColor: C.primaryBorder },
   rowCurrent: { opacity: 0.5 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   name: { fontSize: 15, fontWeight: '700', color: C.textStrong },
@@ -106,4 +108,4 @@ const styles = StyleSheet.create({
   load: { alignItems: 'center', minWidth: 44 },
   loadValue: { fontSize: 18, fontWeight: '800', color: C.textStrong },
   loadLabel: { fontSize: 10, color: C.muted, fontWeight: '600' },
-});
+}));

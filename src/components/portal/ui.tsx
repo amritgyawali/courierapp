@@ -1,21 +1,14 @@
 import { type Href, router } from 'expo-router';
 import { type ReactNode, useState } from 'react';
-import {
-  Modal,
-  Platform,
-  Pressable,
-  type StyleProp,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { Modal, Pressable, type StyleProp, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AppIcon } from '@/components/brand';
 import { usePortalDrawer } from '@/components/portal/drawer';
 import { ArrowLeftIcon, CloseIcon, InfoCircleIcon, MenuIcon, PlusIcon, SearchIcon } from '@/components/portal/icons';
-import { shadow, PortalColors as C } from '@/constants/theme';
+import { Text, TextInput } from '@/components/text';
+import { useBrand } from '@/state/branding-state';
+import { makeStyles, type Palette, shadow, useColors } from '@/theme';
 
 export type InfoContent = { title: string; body: string };
 
@@ -23,17 +16,18 @@ export type InfoContent = { title: string; body: string };
 // Header
 // ---------------------------------------------------------------------------
 
-const SERIF = Platform.select({ ios: 'Georgia', android: 'serif', default: 'Georgia, "Times New Roman", serif' });
-
-/** White "4" mark and italic wordmark used in the Dashboard header. */
+/** App icon on a white tile plus the app name, used in the Dashboard header. */
 export function PortalLogo() {
+  const styles = useStyles();
+  const C = useColors();
+  const { appName } = useBrand();
   return (
-    <View style={styles.logoRow} accessibilityRole="header" accessibilityLabel="Karnali Smart Group">
+    <View style={styles.logoRow} accessibilityRole="header" accessibilityLabel={appName}>
       <View style={styles.logoMark}>
-        <Text style={styles.logoMarkText}>4</Text>
+        <AppIcon size={22} color={C.primary} />
       </View>
       <Text style={styles.logoText} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
-        karnali smart group
+        {appName}
       </Text>
     </View>
   );
@@ -51,8 +45,10 @@ type HeaderProps = {
   backHref?: Href;
 };
 
-/** Crimson app bar: drawer button, centered title or logo, info button. Paints under the status bar. */
+/** Brand-coloured app bar: drawer button, centered title or logo, info button. Paints under the status bar. */
 export function PortalHeader({ title, right, info, back, backHref }: HeaderProps) {
+  const styles = useStyles();
+  const C = useColors();
   const insets = useSafeAreaInsets();
   const drawer = usePortalDrawer();
   const [infoOpen, setInfoOpen] = useState(false);
@@ -70,7 +66,7 @@ export function PortalHeader({ title, right, info, back, backHref }: HeaderProps
         hitSlop={10}
         onPress={back ? goBack : drawer.open}
         style={({ pressed }) => [styles.headerButton, pressed && styles.pressed]}>
-        {back ? <ArrowLeftIcon size={26} color="#FFFFFF" /> : <MenuIcon size={26} color="#FFFFFF" />}
+        {back ? <ArrowLeftIcon size={26} color={C.onPrimary} /> : <MenuIcon size={26} color={C.onPrimary} />}
       </Pressable>
 
       <View style={styles.headerCenter}>
@@ -91,7 +87,7 @@ export function PortalHeader({ title, right, info, back, backHref }: HeaderProps
             hitSlop={10}
             onPress={() => setInfoOpen(true)}
             style={({ pressed }) => [styles.headerButton, pressed && styles.pressed]}>
-            <InfoCircleIcon size={26} color="#FFFFFF" />
+            <InfoCircleIcon size={26} color={C.onPrimary} />
           </Pressable>
         ) : (
           <View style={styles.headerButton} />
@@ -103,6 +99,7 @@ export function PortalHeader({ title, right, info, back, backHref }: HeaderProps
 }
 
 export function HeaderIconButton({ label, onPress, children }: { label: string; onPress: () => void; children: ReactNode }) {
+  const styles = useStyles();
   return (
     <Pressable
       accessibilityRole="button"
@@ -120,6 +117,8 @@ export function HeaderIconButton({ label, onPress, children }: { label: string; 
 // ---------------------------------------------------------------------------
 
 export function InfoSheet({ visible, content, onClose }: { visible: boolean; content: InfoContent; onClose: () => void }) {
+  const C = useColors();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -131,7 +130,7 @@ export function InfoSheet({ visible, content, onClose }: { visible: boolean; con
           <Pressable
             accessibilityRole="button"
             onPress={onClose}
-            style={({ pressed }) => [styles.sheetButton, pressed && { backgroundColor: C.redPressed }]}>
+            style={({ pressed }) => [styles.sheetButton, pressed && { backgroundColor: C.primaryPressed }]}>
             <Text style={styles.sheetButtonText}>Got it</Text>
           </Pressable>
         </Pressable>
@@ -146,11 +145,12 @@ export function InfoSheet({ visible, content, onClose }: { visible: boolean; con
 
 type ChipVariant = 'outline' | 'tint' | 'neutral';
 
-const CHIP_INACTIVE: Record<ChipVariant, { bg: string; border: string; text: string; icon: string }> = {
-  outline: { bg: C.card, border: '#F4C8D2', text: C.red, icon: C.red },
-  tint: { bg: C.redTint, border: '#F9D7DE', text: C.red, icon: C.red },
-  neutral: { bg: C.card, border: '#FBD5DC', text: '#374151', icon: '#D92C55' },
-};
+const chipInactive = (C: Palette, variant: ChipVariant) =>
+  ({
+    outline: { bg: C.card, border: C.primaryBorder, text: C.primary, icon: C.primary },
+    tint: { bg: C.primaryTint, border: C.primarySoft, text: C.primary, icon: C.primary },
+    neutral: { bg: C.card, border: C.border, text: C.textSecondary, icon: C.primary },
+  })[variant];
 
 export function Chip({
   label,
@@ -170,8 +170,10 @@ export function Chip({
   fill?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
-  const inactive = CHIP_INACTIVE[variant];
-  const textColor = active ? '#FFFFFF' : inactive.text;
+  const styles = useStyles();
+  const C = useColors();
+  const inactive = chipInactive(C, variant);
+  const textColor = active ? C.onPrimary : inactive.text;
   return (
     <Pressable
       role="tab"
@@ -182,11 +184,11 @@ export function Chip({
         styles.chip,
         fill && styles.chipFill,
         active
-          ? [styles.chipActive, pressed && { backgroundColor: C.redPressed }]
+          ? [styles.chipActive, pressed && { backgroundColor: C.primaryPressed }]
           : { backgroundColor: inactive.bg, borderColor: inactive.border, opacity: pressed ? 0.75 : 1 },
         style,
       ]}>
-      {icon?.(active ? '#FFFFFF' : inactive.icon)}
+      {icon?.(active ? C.onPrimary : inactive.icon)}
       <Text style={[styles.chipText, { color: textColor }, active && styles.chipTextActive]} numberOfLines={1}>
         {label}
       </Text>
@@ -199,10 +201,12 @@ export function Chip({
 // ---------------------------------------------------------------------------
 
 export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
+  const styles = useStyles();
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
 export function Badge({ label, bg, color }: { label: string; bg: string; color: string }) {
+  const styles = useStyles();
   return (
     <View style={[styles.badge, { backgroundColor: bg }]}>
       <Text style={[styles.badgeText, { color }]}>{label}</Text>
@@ -221,10 +225,12 @@ export function IconTile({
   size?: number;
   radius?: number;
 }) {
+  const styles = useStyles();
   return <View style={[styles.tile, { width: size, height: size, borderRadius: radius, backgroundColor: bg }]}>{children}</View>;
 }
 
 export function SectionHeading({ icon, title, right }: { icon: ReactNode; title: string; right?: ReactNode }) {
+  const styles = useStyles();
   return (
     <View style={styles.sectionHeading}>
       <View style={styles.sectionHeadingLeft}>
@@ -252,6 +258,7 @@ export function ToolButton({
   tint?: boolean;
   active?: boolean;
 }) {
+  const styles = useStyles();
   return (
     <Pressable
       accessibilityRole="button"
@@ -282,7 +289,7 @@ export function SearchCountBar({
   onQueryChange,
   placeholder,
   searchInside = true,
-  searchIconColor = C.faint,
+  searchIconColor,
 }: {
   icon: ReactNode;
   label: string;
@@ -295,13 +302,15 @@ export function SearchCountBar({
   searchInside?: boolean;
   searchIconColor?: string;
 }) {
+  const C = useColors();
+  const styles = useStyles();
   const toggle = (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={searching ? 'Close search' : 'Search'}
       hitSlop={8}
       onPress={onToggleSearch}>
-      {searching ? <CloseIcon size={20} color={C.faint} /> : <SearchIcon size={20} color={searchIconColor} />}
+      {searching ? <CloseIcon size={20} color={C.faint} /> : <SearchIcon size={20} color={searchIconColor ?? C.faint} />}
     </Pressable>
   );
 
@@ -331,6 +340,7 @@ export function SearchCountBar({
 }
 
 export function EmptyState({ icon, title, message }: { icon: ReactNode; title: string; message: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.empty}>
       <View style={styles.emptyIcon}>{icon}</View>
@@ -351,6 +361,8 @@ export function PortalFab({
   variant?: 'solid' | 'outline';
   bottom?: number;
 }) {
+  const styles = useStyles();
+  const C = useColors();
   const solid = variant === 'solid';
   return (
     <Pressable
@@ -362,13 +374,14 @@ export function PortalFab({
         solid ? styles.fabSolid : styles.fabOutline,
         { bottom, transform: [{ scale: pressed ? 0.95 : 1 }] },
       ]}>
-      <PlusIcon size={solid ? 32 : 28} color={solid ? '#FFFFFF' : C.red} />
+      <PlusIcon size={solid ? 32 : 28} color={solid ? C.onPrimary : C.primary} />
     </Pressable>
   );
 }
 
 /** Row of equal-width cells, padded with blanks so a short last row keeps the grid alignment. */
 export function GridRow({ children, columns, gap = 6 }: { children: ReactNode[]; columns: number; gap?: number }) {
+  const styles = useStyles();
   const cells = [...children];
   while (cells.length < columns) cells.push(null);
   return (
@@ -390,10 +403,10 @@ export function chunk<T>(items: T[], size: number) {
 
 // ---------------------------------------------------------------------------
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   pressed: { opacity: 0.7 },
   header: {
-    backgroundColor: C.red,
+    backgroundColor: C.primary,
     paddingHorizontal: 14,
     paddingBottom: 12,
     flexDirection: 'row',
@@ -413,33 +426,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     pointerEvents: 'none',
   },
-  headerTitle: { color: '#FFFFFF', fontSize: 19, fontWeight: '700', letterSpacing: 0.3 },
+  headerTitle: { color: C.onPrimary, fontSize: 18, fontWeight: '700', letterSpacing: 0.2 },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   logoMark: {
-    width: 26,
-    height: 26,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
+    width: 30,
+    height: 30,
+    borderRadius: 9,
+    backgroundColor: C.card,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
-  logoMarkText: { color: '#FFFFFF', fontWeight: '800', fontSize: 16, transform: [{ rotate: '-12deg' }] },
   logoText: {
     flexShrink: 1,
-    color: '#FFFFFF',
-    fontFamily: SERIF,
-    fontStyle: 'italic',
-    fontWeight: '700',
-    fontSize: 19,
+    color: C.onPrimary,
+    fontWeight: '800',
+    fontSize: 18,
     letterSpacing: -0.3,
   },
-  sheetBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+  sheetBackdrop: { flex: 1, backgroundColor: C.overlay, justifyContent: 'flex-end' },
   sheet: { backgroundColor: '#FFFFFF', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingHorizontal: 22, paddingTop: 10 },
   sheetHandle: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: '#D1D5DB', marginBottom: 16 },
   sheetTitle: { fontSize: 18, fontWeight: '700', color: C.textStrong, marginBottom: 8 },
   sheetBody: { fontSize: 14, lineHeight: 21, color: C.muted, marginBottom: 20 },
-  sheetButton: { backgroundColor: C.red, borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
-  sheetButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  sheetButton: { backgroundColor: C.primary, borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
+  sheetButtonText: { color: C.onPrimary, fontSize: 15, fontWeight: '700' },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -451,7 +462,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   chipFill: { flex: 1, paddingHorizontal: 8 },
-  chipActive: { backgroundColor: C.red, borderColor: C.red, boxShadow: shadow(1, 3, 0.12) },
+  chipActive: { backgroundColor: C.primary, borderColor: C.primary, boxShadow: shadow(1, 3, 0.12) },
   chipText: { fontSize: 13, fontWeight: '500' },
   chipTextActive: { fontWeight: '700' },
   card: {
@@ -478,8 +489,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     boxShadow: shadow(1, 3, 0.04),
   },
-  toolButtonTint: { backgroundColor: C.redTint, borderColor: '#F7C6D0' },
-  toolButtonActive: { borderColor: C.red },
+  toolButtonTint: { backgroundColor: C.primaryTint, borderColor: C.primaryBorder },
+  toolButtonActive: { borderColor: C.primary },
   countBar: {
     flex: 1,
     minHeight: 46,
@@ -493,14 +504,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     boxShadow: shadow(1, 3, 0.04),
   },
-  countText: { flex: 1, fontSize: 15, fontWeight: '500', color: '#374151' },
+  countText: { flex: 1, fontSize: 15, fontWeight: '500', color: C.textSecondary },
   countInput: { flex: 1, fontSize: 15, color: C.text, paddingVertical: 10, outlineWidth: 0 },
   empty: { alignItems: 'center', paddingVertical: 48, paddingHorizontal: 32 },
   emptyIcon: {
     width: 76,
     height: 76,
     borderRadius: 38,
-    backgroundColor: C.redSoft,
+    backgroundColor: C.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -516,8 +527,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  fabSolid: { backgroundColor: C.red, boxShadow: shadow(4, 14, 0.4, C.red) },
-  fabOutline: { backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: C.red, boxShadow: shadow(4, 12, 0.18) },
+  fabSolid: { backgroundColor: C.primary, boxShadow: shadow(4, 14, 0.4, C.primary) },
+  fabOutline: { backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: C.primary, boxShadow: shadow(4, 12, 0.18) },
   gridRow: { flexDirection: 'row' },
   gridCell: { flex: 1 },
-});
+}));

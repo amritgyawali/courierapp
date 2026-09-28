@@ -1,8 +1,8 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { UsersIcon } from '@/components/portal/icons';
 import { EmptyState, PortalHeader } from '@/components/portal/ui';
-import { PortalColors as C } from '@/constants/theme';
+import { makeStyles, useColors } from '@/theme';
 
 const INFO = {
   title: 'Customers',
@@ -10,11 +10,13 @@ const INFO = {
 };
 
 export default function CustomersScreen() {
+  const styles = useStyles();
+  const C = useColors();
   return (
     <View style={styles.screen}>
       <PortalHeader title="Customers" info={INFO} />
       <EmptyState
-        icon={<UsersIcon size={32} color={C.red} />}
+        icon={<UsersIcon size={32} color={C.primary} />}
         title="No saved customers yet"
         message="Receivers from your orders will appear here once customer sync is enabled for your account."
       />
@@ -22,6 +24,6 @@ export default function CustomersScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   screen: { flex: 1, backgroundColor: C.screenBg },
-});
+}));

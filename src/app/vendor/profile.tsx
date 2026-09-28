@@ -1,33 +1,47 @@
 import { type ComponentProps, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 
 import { AvatarIcon, CheckIcon } from '@/components/portal/icons';
 import { Card, PortalHeader } from '@/components/portal/ui';
-import { shadow, PortalColors as C } from '@/constants/theme';
+import { Text, TextInput } from '@/components/text';
 import { useAppState } from '@/state/app-state';
 import { useVendorState } from '@/state/vendor-state';
+import { makeStyles, shadow, useColors } from '@/theme';
 
 const INFO = {
   title: 'Profile',
-  body: 'Your business name, contact phone and pickup address appear on your dashboard and help riders reach you.',
+  body: 'Your business name, owner name, contact phone and pickup address appear on your dashboard and help riders reach you. Your Vendor ID is fixed.',
 };
 
 export default function VendorProfileScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const { user } = useAppState();
   const { profile, updateProfile } = useVendorState();
   const [businessName, setBusinessName] = useState(profile.businessName);
+  const [ownerName, setOwnerName] = useState(profile.ownerName);
   const [phone, setPhone] = useState(profile.phone);
   const [address, setAddress] = useState(profile.address);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
 
-  const dirty = businessName !== profile.businessName || phone !== profile.phone || address !== profile.address;
+  const dirty =
+    businessName !== profile.businessName ||
+    ownerName !== profile.ownerName ||
+    phone !== profile.phone ||
+    address !== profile.address;
 
   const save = () => {
     if (!businessName.trim()) return setError('Business name is required.');
+    if (ownerName.trim().length < 2) return setError('Enter the owner’s name.');
     if (!/^9\d{9}$/.test(phone.trim())) return setError('Enter a 10-digit mobile number starting with 9.');
     setError('');
-    updateProfile({ businessName: businessName.trim(), phone: phone.trim(), address: address.trim() });
+    updateProfile({
+      businessName: businessName.trim(),
+      ownerName: ownerName.trim(),
+      phone: phone.trim(),
+      address: address.trim(),
+    });
     setSaved(true);
   };
 
@@ -43,7 +57,7 @@ export default function VendorProfileScreen() {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.identity}>
             <View style={styles.avatar}>
-              <AvatarIcon size={34} color={C.red} />
+              <AvatarIcon size={34} color={C.primary} />
             </View>
             <Text style={styles.idText}>Vendor ID: {profile.vendorId}</Text>
             {user && <Text style={styles.email}>{user.email}</Text>}
@@ -51,6 +65,7 @@ export default function VendorProfileScreen() {
 
           <Card style={styles.card}>
             <Field label="Business name" value={businessName} onChangeText={edit(setBusinessName)} autoCapitalize="words" />
+            <Field label="Owner name" value={ownerName} onChangeText={edit(setOwnerName)} autoCapitalize="words" />
             <Field label="Contact phone" value={phone} onChangeText={edit(setPhone)} keyboardType="phone-pad" maxLength={10} />
             <Field label="Pickup address" value={address} onChangeText={edit(setAddress)} autoCapitalize="words" multiline />
           </Card>
@@ -61,8 +76,8 @@ export default function VendorProfileScreen() {
             accessibilityRole="button"
             disabled={!dirty}
             onPress={save}
-            style={({ pressed }) => [styles.save, !dirty && styles.saveDisabled, pressed && { backgroundColor: C.redPressed }]}>
-            {saved && !dirty ? <CheckIcon size={18} color="#FFFFFF" /> : null}
+            style={({ pressed }) => [styles.save, !dirty && styles.saveDisabled, pressed && { backgroundColor: C.primaryPressed }]}>
+            {saved && !dirty ? <CheckIcon size={18} color={C.onPrimary} /> : null}
             <Text style={styles.saveText}>{saved && !dirty ? 'Saved' : 'Save changes'}</Text>
           </Pressable>
         </ScrollView>
@@ -75,6 +90,8 @@ function Field({
   label,
   ...input
 }: { label: string } & ComponentProps<typeof TextInput>) {
+  const styles = useStyles();
+  const C = useColors();
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
@@ -83,7 +100,7 @@ function Field({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   screen: { flex: 1, backgroundColor: C.screenBg },
   flex: { flex: 1 },
   content: { padding: 16, gap: 16, paddingBottom: 40 },
@@ -92,9 +109,9 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#FFF0F3',
+    backgroundColor: C.primaryTint,
     borderWidth: 1,
-    borderColor: '#FEE2E2',
+    borderColor: C.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
@@ -116,17 +133,17 @@ const styles = StyleSheet.create({
     outlineWidth: 0,
   },
   inputMultiline: { minHeight: 70, textAlignVertical: 'top' },
-  error: { color: C.red, fontSize: 13, marginTop: -6 },
+  error: { color: C.danger, fontSize: 13, marginTop: -6 },
   save: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: C.red,
+    backgroundColor: C.primary,
     borderRadius: 12,
     paddingVertical: 14,
-    boxShadow: shadow(2, 8, 0.2, C.red),
+    boxShadow: shadow(2, 8, 0.2, C.primary),
   },
   saveDisabled: { opacity: 0.55 },
-  saveText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
-});
+  saveText: { color: C.onPrimary, fontSize: 15, fontWeight: '700' },
+}));

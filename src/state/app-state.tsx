@@ -1,11 +1,17 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, type ReactNode, useContext, useMemo } from 'react';
 
+import { DEMO_PERSON_NAME } from '@/constants/identity';
 import { DEFAULT_USER_ROLE, isUserRole, type UserRole } from '@/constants/user-roles';
+import { isRecord, nonEmptyOr, usePersistedState } from '@/state/persist';
 
 export type Tracking = { id: string; number: string; addedAt: number };
 
-export type User = { email: string; role: UserRole };
+export type User = {
+  email: string;
+  role: UserRole;
+  /** Display name until sign-in returns a real profile. */
+  name: string;
+};
 
 export type Details = {
   name: string;
@@ -53,7 +59,7 @@ const STORAGE_KEY = 'ksg-app-state-v1';
 
 type AppState = PersistedState & {
   ready: boolean;
-  signIn: (user: User) => void;
+  signIn: (user: Omit<User, 'name'> & { name?: string }) => void;
   signOut: () => void;
   addTracking: (number: string) => boolean;
   removeTracking: (id: string) => void;
@@ -64,42 +70,38 @@ type AppState = PersistedState & {
 
 const AppStateContext = createContext<AppState | null>(null);
 
-/** Merge saved data over defaults. Sessions saved before roles existed become customers. */
-function hydrate(saved: Partial<PersistedState>): PersistedState {
-  const state = { ...initialState, ...saved };
-  const user = state.user as Partial<User> | null;
+/**
+ * Merges saved data over defaults. Sessions saved before roles existed become customers, and
+ * sessions saved before display names existed get the demo name.
+ */
+function hydrate(saved: unknown): PersistedState {
+  if (!isRecord(saved)) return initialState;
+  const state = { ...initialState, ...saved } as PersistedState;
+  const user = isRecord(saved.user) ? saved.user : null;
   state.user =
     user && typeof user.email === 'string'
-      ? { email: user.email, role: isUserRole(user.role) ? user.role : DEFAULT_USER_ROLE }
+      ? {
+          email: user.email,
+          role: isUserRole(user.role) ? user.role : DEFAULT_USER_ROLE,
+          name: nonEmptyOr(user.name, DEMO_PERSON_NAME),
+        }
       : null;
+  state.trackings = Array.isArray(state.trackings) ? state.trackings : [];
+  state.details = { ...emptyDetails, ...(isRecord(saved.details) ? saved.details : {}) };
   return state;
 }
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<PersistedState>(initialState);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((raw) => {
-        if (raw) setState(hydrate(JSON.parse(raw)));
-      })
-      .catch(() => {})
-      .finally(() => setReady(true));
-  }, []);
-
-  useEffect(() => {
-    if (ready) AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state)).catch(() => {});
-  }, [state, ready]);
+  const [state, setState, ready] = usePersistedState(STORAGE_KEY, initialState, { hydrate });
 
   const value = useMemo<AppState>(
     () => ({
       ...state,
       ready,
-      signIn: (user) =>
+      signIn: ({ name, ...user }) =>
         setState((s) => ({
           ...s,
-          user,
+          user: { ...user, name: name?.trim() || DEMO_PERSON_NAME },
           details: s.details.email ? s.details : { ...s.details, email: user.email },
         })),
       signOut: () => setState((s) => ({ ...s, user: null })),
@@ -117,7 +119,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       saveNotify: (notify) => setState((s) => ({ ...s, notify })),
       saveDelivery: (delivery) => setState((s) => ({ ...s, delivery })),
     }),
-    [state, ready],
+    [state, ready, setState],
   );
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
@@ -131,4 +133,10 @@ export function useAppState() {
 
 export function hasDetails(d: Details) {
   return Boolean(d.name || d.surname || d.dob || d.province || d.district || d.municipality || d.ward);
+}
+
+/** Name to greet the customer with: their own details if filled in, otherwise the account name. */
+export function displayName(user: User | null, details: Details) {
+  const own = `${details.name} ${details.surname}`.trim();
+  return own || user?.name || DEMO_PERSON_NAME;
 }

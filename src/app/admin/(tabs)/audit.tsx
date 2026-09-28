@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, View } from 'react-native';
 
 import { useAdmin } from '@/components/admin/use-admin';
 import { HistoryIcon } from '@/components/portal/icons';
 import { Card, EmptyState, PortalHeader, SearchCountBar } from '@/components/portal/ui';
 import { Avatar, useNow } from '@/components/portal/widgets';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
+import { makeStyles, useColors } from '@/theme';
 import { formatDateTime, timeAgo } from '@/utils/format';
 
 const INFO = {
@@ -14,6 +15,8 @@ const INFO = {
 };
 
 export default function AuditScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const { data } = useAdmin();
   const now = useNow();
   const [searching, setSearching] = useState(false);
@@ -27,7 +30,7 @@ export default function AuditScreen() {
       <PortalHeader title="Audit Log" info={INFO} />
       <View style={styles.toolbar}>
         <SearchCountBar
-          icon={<HistoryIcon size={18} color={C.red} />}
+          icon={<HistoryIcon size={18} color={C.primary} />}
           label={`${list.length} event${list.length === 1 ? '' : 's'}`}
           searching={searching}
           onToggleSearch={() => {
@@ -59,13 +62,13 @@ export default function AuditScreen() {
             </View>
           </Card>
         )}
-        ListEmptyComponent={<EmptyState icon={<HistoryIcon size={30} color={C.red} />} title="No events" message="Admin actions will be recorded here." />}
+        ListEmptyComponent={<EmptyState icon={<HistoryIcon size={30} color={C.primary} />} title="No events" message="Admin actions will be recorded here." />}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   toolbar: { flexDirection: 'row', paddingHorizontal: 12, paddingTop: 12, paddingBottom: 4 },
@@ -73,6 +76,6 @@ const styles = StyleSheet.create({
   card: { flexDirection: 'row', gap: 12, padding: 12, alignItems: 'flex-start' },
   text: { fontSize: 14, color: C.text },
   actor: { fontWeight: '700', color: C.textStrong },
-  target: { fontSize: 13, fontWeight: '600', color: C.red, marginTop: 2 },
+  target: { fontSize: 13, fontWeight: '600', color: C.primary, marginTop: 2 },
   meta: { fontSize: 11, color: C.faint, marginTop: 4 },
-});
+}));

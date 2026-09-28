@@ -1,16 +1,19 @@
-import { SectionList, StyleSheet, Text, View } from 'react-native';
+import { SectionList, View } from 'react-native';
 
 import { StatusBadge } from '@/components/ops/shipment';
 import { HistoryIcon } from '@/components/portal/icons';
 import { Card, EmptyState, PortalHeader } from '@/components/portal/ui';
 import { useRider } from '@/components/rider/use-rider';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import type { ShipmentStatus } from '@/data/ops';
+import { makeStyles, useColors } from '@/theme';
 import { formatDate, formatRs, formatTime, isSameDay, startOfDay } from '@/utils/format';
 
 const COUNTED: ShipmentStatus[] = ['picked-up', 'at-hub', 'delivered', 'failed', 'returned'];
 
 export default function RiderHistory() {
+  const styles = useStyles();
+  const C = useColors();
   const { data, me } = useRider();
 
   const entries = data.shipments
@@ -56,13 +59,13 @@ export default function RiderHistory() {
           </Card>
         )}
         ItemSeparatorComponent={() => <View style={styles.gap} />}
-        ListEmptyComponent={<EmptyState icon={<HistoryIcon size={30} color={C.red} />} title="No history yet" message="Completed pickups and deliveries appear here." />}
+        ListEmptyComponent={<EmptyState icon={<HistoryIcon size={30} color={C.primary} />} title="No history yet" message="Completed pickups and deliveries appear here." />}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   list: { padding: 12, paddingBottom: 40 },
@@ -73,4 +76,4 @@ const styles = StyleSheet.create({
   title: { fontSize: 14, fontWeight: '700', color: C.textStrong },
   meta: { fontSize: 12, color: C.muted, marginTop: 2 },
   gap: { height: 8 },
-});
+}));

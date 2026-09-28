@@ -1,5 +1,5 @@
 import { type ReactNode, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import { DateButton } from '@/components/portal/date-button';
 import {
@@ -16,9 +16,10 @@ import {
   TrendUpIcon,
 } from '@/components/portal/icons';
 import { Card, Chip, chunk, GridRow, IconTile, PortalHeader } from '@/components/portal/ui';
-import { shadow, PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { dailyBreakdown, MAX_REPORT_DAYS, ordersInRange, reportSummary, type ReportSummary } from '@/data/vendor';
 import { useVendorState } from '@/state/vendor-state';
+import { makeStyles, shadow, useColors } from '@/theme';
 import { addDays, daysInclusive, formatAmount, formatDate, formatDayMonthYear, formatRs, startOfDay } from '@/utils/format';
 
 type Tab = 'sales' | 'daily';
@@ -54,6 +55,8 @@ const salesTiles = (s: ReportSummary): Tile[] => [
 ];
 
 export default function ReportsScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const { orders } = useVendorState();
   const [tab, setTab] = useState<Tab>('sales');
   const [draft, setDraft] = useState<Range>(defaultRange);
@@ -119,7 +122,7 @@ export default function ReportsScreen() {
               accessibilityRole="button"
               accessibilityLabel="Apply date range"
               onPress={apply}
-              style={({ pressed }) => [styles.applyButton, pressed && { backgroundColor: C.redPressed }]}>
+              style={({ pressed }) => [styles.applyButton, pressed && { backgroundColor: C.primaryPressed }]}>
               <FilterLinesIcon size={22} color="#FFFFFF" />
             </Pressable>
           </View>
@@ -201,7 +204,7 @@ export default function ReportsScreen() {
             <Card key={day.toISOString()} style={styles.summaryCard}>
               <View style={styles.summaryHeader}>
                 <View style={styles.summaryDays}>
-                  <CalendarOutlineIcon size={16} color={C.red} />
+                  <CalendarOutlineIcon size={16} color={C.primary} />
                   <Text style={styles.dayTitle}>{formatDate(day)}</Text>
                 </View>
                 <Text style={styles.daySales}>{formatRs(s.packageValue)}</Text>
@@ -234,6 +237,8 @@ function DateFilterField({
   onClear: () => void;
   maximumDate: Date;
 }) {
+  const styles = useStyles();
+  const C = useColors();
   return (
     <View style={styles.dateWrap}>
       <DateButton value={value} onChange={onChange} maximumDate={maximumDate} accessibilityLabel={label}>
@@ -269,6 +274,7 @@ function StatBox({
   note?: string;
   noteColor?: string;
 }) {
+  const styles = useStyles();
   return (
     <View style={styles.statBox} accessible accessibilityLabel={`${title}: ${value}${note ? `, ${note}` : ''}`}>
       <View style={styles.statTop}>
@@ -289,6 +295,7 @@ function StatBox({
 }
 
 function TileGroup({ icon, title, color, tiles }: { icon: ReactNode; title: string; color: string; tiles: Tile[] }) {
+  const styles = useStyles();
   return (
     <View style={styles.tileGroup}>
       <View style={styles.tileGroupTitle}>
@@ -307,6 +314,7 @@ function TileGroup({ icon, title, color, tiles }: { icon: ReactNode; title: stri
 }
 
 function MiniTile({ tile }: { tile: Tile }) {
+  const styles = useStyles();
   return (
     <View style={[styles.miniTile, { backgroundColor: tile.bg }]} accessible accessibilityLabel={`${tile.label}: ${tile.value}`}>
       <Text style={styles.miniValue}>{formatAmount(tile.value, 0)}</Text>
@@ -315,8 +323,8 @@ function MiniTile({ tile }: { tile: Tile }) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#F2F6FA' },
+const useStyles = makeStyles(({ colors: C }) => ({
+  screen: { flex: 1, backgroundColor: C.screenBg },
   content: { padding: 14, gap: 14, paddingBottom: 40 },
   row: { flexDirection: 'row', gap: 10 },
   bigChip: { paddingVertical: 12 },
@@ -350,13 +358,13 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: C.red,
+    backgroundColor: C.primary,
     alignItems: 'center',
     justifyContent: 'center',
     boxShadow: shadow(2, 6, 0.15),
   },
   helper: { fontSize: 12, fontWeight: '500', color: '#64748B', paddingHorizontal: 4 },
-  helperError: { color: C.red },
+  helperError: { color: C.danger },
   statBox: {
     flex: 1,
     backgroundColor: '#FFFFFF',
@@ -392,7 +400,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 7,
-    backgroundColor: C.red,
+    backgroundColor: C.primary,
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 8,
@@ -416,4 +424,4 @@ const styles = StyleSheet.create({
     marginTop: 3,
     lineHeight: 12,
   },
-});
+}));

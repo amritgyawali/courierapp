@@ -1,13 +1,14 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, View } from 'react-native';
 
 import { useAdmin } from '@/components/admin/use-admin';
 import { BikeIcon, CubeIcon, MessageIcon, StoreSmallIcon, UserIcon } from '@/components/portal/icons';
 import { Badge, Card, Chip, EmptyState, PortalHeader } from '@/components/portal/ui';
 import { Button, KeyValue, Sheet, useNow, useToast } from '@/components/portal/widgets';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { PRIORITY_META, type Ticket, TICKET_STATUS_META, type TicketStatus } from '@/data/ops';
+import { makeStyles, useColors } from '@/theme';
 import { formatDateTime, timeAgo } from '@/utils/format';
 
 type Filter = TicketStatus | 'all';
@@ -24,6 +25,8 @@ const INFO = {
 };
 
 export default function TicketsScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const { data, dispatch, actor, me } = useAdmin();
   const toast = useToast();
   const now = useNow();
@@ -92,7 +95,7 @@ export default function TicketsScreen() {
             </Pressable>
           );
         }}
-        ListEmptyComponent={<EmptyState icon={<MessageIcon size={30} color={C.red} />} title="No tickets here" message="Nothing waiting in this queue." />}
+        ListEmptyComponent={<EmptyState icon={<MessageIcon size={30} color={C.primary} />} title="No tickets here" message="Nothing waiting in this queue." />}
       />
 
       <Sheet
@@ -134,7 +137,7 @@ export default function TicketsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   screen: { flex: 1, backgroundColor: C.screenBg },
   tabs: { flexDirection: 'row', gap: 6, padding: 12, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#F1F2F4' },
   list: { padding: 12, gap: 12, paddingBottom: 40 },
@@ -149,4 +152,4 @@ const styles = StyleSheet.create({
   requester: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   meta: { fontSize: 12, color: C.muted },
   sheetBody: { fontSize: 14, color: C.text, lineHeight: 21 },
-});
+}));

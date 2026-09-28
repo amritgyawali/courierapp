@@ -2,9 +2,9 @@ import { Tabs } from 'expo-router';
 
 import { BikeIcon, CubeIcon, DispatchIcon, HomeIcon, WalletIcon } from '@/components/portal/icons';
 import { PortalTabBar, type PortalTab } from '@/components/portal/tab-bar';
-import { PortalColors as C } from '@/constants/theme';
 import { approvals, todaySummary } from '@/data/ops';
 import { useOps } from '@/state/ops-state';
+import { useColors } from '@/theme';
 
 const HIDDEN = [
   'merchants',
@@ -17,10 +17,12 @@ const HIDDEN = [
   'audit',
   'reports',
   'settings',
+  'branding',
   'live-map',
 ];
 
 export default function AdminTabsLayout() {
+  const C = useColors();
   const { data } = useOps();
   const today = todaySummary(data);
   const pending = approvals(data);

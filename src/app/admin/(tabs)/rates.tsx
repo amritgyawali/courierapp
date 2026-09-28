@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { useAdmin } from '@/components/admin/use-admin';
 import { CalculatorOutlineIcon } from '@/components/portal/icons';
 import { Card, Chip, PortalHeader, SectionHeading } from '@/components/portal/ui';
 import { Button, KeyValue, TextField, Toggle, useToast } from '@/components/portal/widgets';
-import { PortalColors as C } from '@/constants/theme';
+import { Text, TextInput } from '@/components/text';
 import { quote, type RateCard, type ZoneId } from '@/data/ops';
+import { makeStyles, useColors } from '@/theme';
 import { formatRs } from '@/utils/format';
 
 const INFO = {
@@ -20,6 +21,8 @@ const num = (v: string) => {
 };
 
 export default function RatesScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const { data, dispatch, actor } = useAdmin();
   const toast = useToast();
   const [card, setCard] = useState<RateCard>(data.rateCard);
@@ -38,7 +41,7 @@ export default function RatesScreen() {
     <View style={styles.screen}>
       <PortalHeader title="Rate Card" info={INFO} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <SectionHeading icon={<CalculatorOutlineIcon size={20} color={C.red} />} title="Price calculator" />
+        <SectionHeading icon={<CalculatorOutlineIcon size={20} color={C.primary} />} title="Price calculator" />
         <Card style={styles.card}>
           <View style={styles.chips}>
             {card.zones.map((z) => (
@@ -62,12 +65,12 @@ export default function RatesScreen() {
             <KeyValue label="Extra weight" value={formatRs(q.weightCharge)} />
             <KeyValue label={`COD fee (${card.codFeePercent}%)`} value={formatRs(q.codFee)} />
             {fragile && <KeyValue label="Fragile handling" value={formatRs(q.fragile)} />}
-            <KeyValue label="Delivery charge" value={formatRs(q.total)} bold valueColor={C.red} />
+            <KeyValue label="Delivery charge" value={formatRs(q.total)} bold valueColor={C.primary} />
             <Text style={styles.sla}>Delivery promise: within {q.slaHours} hours</Text>
           </View>
         </Card>
 
-        <SectionHeading icon={<CalculatorOutlineIcon size={20} color={C.red} />} title="Zones" />
+        <SectionHeading icon={<CalculatorOutlineIcon size={20} color={C.primary} />} title="Zones" />
         {card.zones.map((z) => (
           <Card key={z.id} style={styles.card}>
             <Text style={styles.zone}>{z.label}</Text>
@@ -102,6 +105,7 @@ export default function RatesScreen() {
 }
 
 function Money({ label, value, onChange, plain }: { label: string; value: number; onChange: (v: string) => void; plain?: boolean }) {
+  const styles = useStyles();
   return (
     <View style={styles.money}>
       <Text style={styles.moneyLabel}>{label}</Text>
@@ -120,7 +124,7 @@ function Money({ label, value, onChange, plain }: { label: string; value: number
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   content: { padding: 12, gap: 12, paddingBottom: 40 },
@@ -145,4 +149,4 @@ const styles = StyleSheet.create({
   },
   prefix: { fontSize: 13, color: C.muted, marginRight: 4 },
   moneyInput: { flex: 1, fontSize: 15, fontWeight: '700', color: C.textStrong, paddingVertical: 9, outlineWidth: 0, minWidth: 0 },
-});
+}));

@@ -1,10 +1,11 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { NavigationIcon, PhoneOutlineIcon, PinOutlineIcon, WineGlassIcon } from '@/components/portal/icons';
 import { Badge, Card } from '@/components/portal/ui';
 import type { Stop } from '@/components/rider/use-rider';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { type Hub, type OpsData, type Shipment, TASK_META, taskKind } from '@/data/ops';
+import { makeStyles, useColors } from '@/theme';
 import { formatRs } from '@/utils/format';
 import { callPhone, navigateTo } from '@/utils/links';
 
@@ -20,6 +21,8 @@ export function taskParty(data: OpsData, s: Shipment, hub: Hub) {
 }
 
 export function TaskCard({ stop, data, hub, onPress }: { stop: Stop; data: OpsData; hub: Hub; onPress: () => void }) {
+  const styles = useStyles();
+  const C = useColors();
   const s = stop.shipment;
   const kind = taskKind(s) ?? 'delivery';
   const meta = TASK_META[kind];
@@ -68,12 +71,12 @@ export function TaskCard({ stop, data, hub, onPress }: { stop: Stop; data: OpsDa
       </Pressable>
       <View style={styles.actions}>
         <Pressable accessibilityRole="button" accessibilityLabel={`Call ${party.title}`} onPress={() => callPhone(party.phone)} style={styles.action}>
-          <PhoneOutlineIcon size={16} color={C.red} />
+          <PhoneOutlineIcon size={16} color={C.primary} />
           <Text style={styles.actionText}>Call</Text>
         </Pressable>
         <View style={styles.actionDivider} />
         <Pressable accessibilityRole="button" accessibilityLabel="Navigate" onPress={() => navigateTo(stop.latitude, stop.longitude)} style={styles.action}>
-          <NavigationIcon size={16} color={C.red} />
+          <NavigationIcon size={16} color={C.primary} />
           <Text style={styles.actionText}>Navigate</Text>
         </Pressable>
       </View>
@@ -81,7 +84,7 @@ export function TaskCard({ stop, data, hub, onPress }: { stop: Stop; data: OpsDa
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   card: { overflow: 'hidden' },
   body: { flexDirection: 'row', gap: 12, padding: 14, alignItems: 'flex-start' },
@@ -90,17 +93,17 @@ const styles = StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
   fragile: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 6, paddingVertical: 3, borderRadius: 5, backgroundColor: '#FFFBEB' },
   fragileText: { fontSize: 10, fontWeight: '700', color: '#D97706' },
-  attempt: { fontSize: 11, fontWeight: '700', color: C.red },
+  attempt: { fontSize: 11, fontWeight: '700', color: C.amberStrong },
   title: { fontSize: 16, fontWeight: '700', color: C.textStrong, marginTop: 6 },
   addressRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 3 },
   address: { flex: 1, fontSize: 13, color: C.muted },
   id: { fontSize: 11, color: C.faint, marginTop: 4 },
   cod: { alignItems: 'flex-end' },
-  codValue: { fontSize: 16, fontWeight: '800', color: C.red },
+  codValue: { fontSize: 16, fontWeight: '800', color: C.primary },
   prepaid: { fontSize: 13, color: '#16A34A' },
   codLabel: { fontSize: 10, color: C.muted, fontWeight: '600' },
   actions: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: C.divider },
   action: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 11 },
   actionDivider: { width: 1, backgroundColor: C.divider },
-  actionText: { fontSize: 13, fontWeight: '700', color: C.red },
-});
+  actionText: { fontSize: 13, fontWeight: '700', color: C.primary },
+}));

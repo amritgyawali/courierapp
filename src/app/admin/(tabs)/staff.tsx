@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { useAdmin } from '@/components/admin/use-admin';
 import { CheckIcon, ShieldCheckIcon, UsersIcon } from '@/components/portal/icons';
 import { Badge, Card, Chip, PortalHeader, SectionHeading } from '@/components/portal/ui';
 import { Avatar, Button, Sheet, TextField, Toggle, useNow, useToast } from '@/components/portal/widgets';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { ALL_PERMISSIONS, ROLE_META, type StaffRole } from '@/data/ops';
+import { makeStyles, useColors } from '@/theme';
 import { timeAgo } from '@/utils/format';
 
 const ROLES = Object.keys(ROLE_META) as StaffRole[];
@@ -18,6 +19,8 @@ const INFO = {
 };
 
 export default function StaffScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const { data, dispatch, actor, me, lookup } = useAdmin();
   const toast = useToast();
   const now = useNow();
@@ -46,7 +49,7 @@ export default function StaffScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Button title="Invite staff member" icon={(c) => <UsersIcon size={18} color={c} />} onPress={() => setInviteOpen(true)} />
 
-        <SectionHeading icon={<UsersIcon size={20} color={C.red} />} title={`Team (${data.staff.length})`} />
+        <SectionHeading icon={<UsersIcon size={20} color={C.primary} />} title={`Team (${data.staff.length})`} />
         <Card>
           {data.staff.map((s, i) => (
             <View key={s.id} style={[styles.member, i > 0 && styles.divider]}>
@@ -75,7 +78,7 @@ export default function StaffScreen() {
           ))}
         </Card>
 
-        <SectionHeading icon={<ShieldCheckIcon size={20} color={C.red} />} title="Role permissions" />
+        <SectionHeading icon={<ShieldCheckIcon size={20} color={C.primary} />} title="Role permissions" />
         {ROLES.map((r) => (
           <Card key={r} style={styles.roleCard}>
             <View style={styles.roleHead}>
@@ -123,7 +126,7 @@ export default function StaffScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   content: { padding: 12, gap: 12, paddingBottom: 40 },
@@ -144,4 +147,4 @@ const styles = StyleSheet.create({
   permTextOff: { color: '#9CA3AF' },
   label: { fontSize: 12, fontWeight: '600', color: C.muted },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-});
+}));

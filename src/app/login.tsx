@@ -1,15 +1,17 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { AuthLayout, EMAIL_RE, FormError, OrDivider, RoleSelector } from '@/components/auth-form';
 import { LockIcon, MailIcon } from '@/components/icons';
+import { Text } from '@/components/text';
 import { Button, IconInput } from '@/components/ui';
-import { Colors } from '@/constants/theme';
 import { DEFAULT_USER_ROLE, type UserRole } from '@/constants/user-roles';
 import { useAppState } from '@/state/app-state';
+import { makeStyles } from '@/theme';
 
 export default function LoginScreen() {
+  const styles = useStyles();
   const { signIn } = useAppState();
   const [role, setRole] = useState<UserRole>(DEFAULT_USER_ROLE);
   const [email, setEmail] = useState('');
@@ -72,9 +74,9 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   form: { gap: 16 },
   forgotRow: { flexDirection: 'row', justifyContent: 'flex-end', paddingBottom: 4 },
-  forgot: { fontSize: 14, fontWeight: '600', color: Colors.link },
-  info: { fontSize: 13, color: Colors.textMuted, marginTop: -8 },
-});
+  forgot: { fontSize: 14, fontWeight: '600', color: C.link },
+  info: { fontSize: 13, color: C.muted, marginTop: -8 },
+}));

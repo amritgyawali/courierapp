@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, View } from 'react-native';
 
 import { AssignSheet } from '@/components/admin/assign-sheet';
 import { useAdmin } from '@/components/admin/use-admin';
@@ -8,8 +8,9 @@ import { ShipmentCard } from '@/components/ops/shipment';
 import { AlertTriangleIcon, BikeIcon, ClockIcon, ReturnArrowIcon } from '@/components/portal/icons';
 import { Chip, EmptyState, PortalHeader } from '@/components/portal/ui';
 import { Button, useNow, useToast } from '@/components/portal/widgets';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { isOverdue, type Shipment } from '@/data/ops';
+import { makeStyles, useColors } from '@/theme';
 
 type Tab = 'failed' | 'overdue' | 'returning' | 'returned';
 
@@ -19,6 +20,8 @@ const INFO = {
 };
 
 export default function ExceptionsScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const { data, dispatch, actor, lookup } = useAdmin();
   const toast = useToast();
   const now = useNow();
@@ -98,7 +101,7 @@ export default function ExceptionsScreen() {
           );
         }}
         ListEmptyComponent={
-          <EmptyState icon={<AlertTriangleIcon size={30} color={C.red} />} title="Nothing to resolve" message="Parcels that need attention will show up here." />
+          <EmptyState icon={<AlertTriangleIcon size={30} color={C.primary} />} title="Nothing to resolve" message="Parcels that need attention will show up here." />
         }
       />
 
@@ -107,12 +110,12 @@ export default function ExceptionsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   tabs: { flexDirection: 'row', gap: 6, padding: 12, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#F1F2F4' },
   list: { padding: 12, gap: 12, paddingBottom: 40 },
   footer: { paddingHorizontal: 14, paddingBottom: 14, gap: 10 },
-  reason: { fontSize: 12, fontWeight: '600', color: C.red },
+  reason: { fontSize: 12, fontWeight: '600', color: C.dangerStrong },
   actions: { flexDirection: 'row', gap: 10 },
-});
+}));

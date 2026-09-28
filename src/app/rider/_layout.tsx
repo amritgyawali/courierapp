@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 import { type DrawerConfig, PortalDrawerProvider, useStandardUtilities } from '@/components/portal/drawer';
 import {
@@ -18,19 +18,21 @@ import {
 import { ToastProvider, useNow } from '@/components/portal/widgets';
 import { SosSheet } from '@/components/rider/sos-sheet';
 import { useRider } from '@/components/rider/use-rider';
-import { PortalColors as C } from '@/constants/theme';
 import { useOps } from '@/state/ops-state';
+import { makeStyles, useColors } from '@/theme';
 
 /**
  * Rider portal: today's work (Home), the task list, route map, COD wallet & earnings and the
  * account. Task details stack above the tabs.
  */
 export default function RiderLayout() {
+  const styles = useStyles();
+  const C = useColors();
   const { ready } = useOps();
   if (!ready) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator color={C.red} size="large" />
+        <ActivityIndicator color={C.primary} size="large" />
       </View>
     );
   }
@@ -43,6 +45,7 @@ export default function RiderLayout() {
 }
 
 function RiderShell() {
+  const C = useColors();
   const now = useNow(60000);
   const { me, stats, data } = useRider(now);
   const [sos, setSos] = useState(false);
@@ -58,7 +61,7 @@ function RiderShell() {
   const unread = data.announcements.filter((a) => a.audience !== 'merchants' && now.getTime() - new Date(a.at).getTime() < 24 * 3600000).length;
 
   const drawer: DrawerConfig = {
-    profile: { name: me.name, badge: `Rider ID: ${me.id}`, editHref: '/rider/account', avatar: <BikeIcon size={28} color={C.red} /> },
+    profile: { name: me.name, badge: `Rider ID: ${me.id}`, editHref: '/rider/account', avatar: <BikeIcon size={28} color={C.primary} /> },
     items: [
       { label: 'Home', href: '/rider', match: '/rider', icon: (p) => <HomeIcon {...p} /> },
       { label: 'My Tasks', href: '/rider/tasks', match: '/rider/tasks', icon: (p) => <CubeIcon {...p} />, badge: stats.active },
@@ -82,6 +85,6 @@ function RiderShell() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: C.screenBg },
-});
+}));

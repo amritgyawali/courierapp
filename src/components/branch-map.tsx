@@ -3,8 +3,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import MapView, { Marker, type Region } from 'react-native-maps';
 
 import { ZoomInIcon, ZoomOutIcon } from '@/components/icons';
-import { shadow } from '@/constants/theme';
 import type { Branch } from '@/data/branches';
+import { shadow, useColors } from '@/theme';
 
 export type MapPoint = { latitude: number; longitude: number; title?: string; description?: string };
 
@@ -36,6 +36,7 @@ export function branchToPoint(b: Branch): MapPoint {
 }
 
 export function BranchMap({ points, initialRegion, focus, focusDelta = 0.4, showZoom = true, zoomBottom = 16 }: Props) {
+  const C = useColors();
   const mapRef = useRef<MapView>(null);
   const region = useRef<Region>(initialRegion);
 
@@ -72,7 +73,7 @@ export function BranchMap({ points, initialRegion, focus, focusDelta = 0.4, show
             coordinate={{ latitude: p.latitude, longitude: p.longitude }}
             title={p.title}
             description={p.description}
-            pinColor="#E52320"
+            pinColor={C.primary}
           />
         ))}
       </MapView>

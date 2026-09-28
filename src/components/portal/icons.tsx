@@ -691,3 +691,52 @@ export const RefreshIcon = (p: PortalIconProps) => (
     <Path d="M21 12a9 9 0 0 1-15.36 6.36L3 16M3 12a9 9 0 0 1 15.36-6.36L21 8M21 3v5h-5M3 21v-5h5" />
   </S>
 );
+
+// ---- Branding ----
+
+export const PaletteIcon = (p: PortalIconProps) => (
+  <S {...p} sw={1.9}>
+    <Path d="M12 3a9 9 0 0 0 0 18c1.1 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H16a5 5 0 0 0 5-5C21 6.6 17 3 12 3z" />
+    <Circle cx={7.5} cy={10.5} r={1.2} />
+    <Circle cx={10.5} cy={7} r={1.2} />
+    <Circle cx={15} cy={7.5} r={1.2} />
+  </S>
+);
+
+export const ImageIcon = (p: PortalIconProps) => (
+  <S {...p} sw={1.9}>
+    <Rect x={3} y={4} width={18} height={16} rx={2.5} />
+    <Circle cx={9} cy={9.5} r={1.6} />
+    <Path d="M21 16l-5-5-9 9" />
+  </S>
+);
+
+export const TypeIcon = (p: PortalIconProps) => (
+  <S {...p} sw={2}>
+    <Path d="M4 7V5h11v2M9.5 5v14M7 19h5M14 12h6M17 12v7M15.5 19h3" />
+  </S>
+);
+
+export const LinkIcon = (p: PortalIconProps) => (
+  <S {...p} sw={2}>
+    <Path d="M10 13a5 5 0 0 0 7.07.07l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.07-.07l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+  </S>
+);
+
+export const UploadIcon = (p: PortalIconProps) => (
+  <S {...p}>
+    <Path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+  </S>
+);
+
+export const TrashIcon = (p: PortalIconProps) => (
+  <S {...p} sw={1.9}>
+    <Path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6" />
+  </S>
+);
+
+export const BrushIcon = (p: PortalIconProps) => (
+  <S {...p} sw={1.9}>
+    <Path d="M18.4 2.6a2 2 0 0 1 2.9 2.9l-8.9 8.9-2.9-2.9zM9.5 11.5l-2.8.4a3 3 0 0 0-2.5 2.5L3 21l6.6-1.2a3 3 0 0 0 2.5-2.5l.4-2.8" />
+  </S>
+);

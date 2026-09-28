@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 
 import {
@@ -14,7 +13,10 @@ import {
   type ShipmentStatus,
   type Staff,
   type TicketStatus,
+  migrateOpsData,
 } from '@/data/ops';
+import { readJson, writeJson } from '@/state/persist';
+import { uniqueId } from '@/utils/id';
 
 const STORAGE_KEY = 'ksg-ops-data-v1';
 
@@ -55,15 +57,16 @@ export type OpsAction =
   | ({ type: 'rateCard'; rateCard: RateCard } & Actor)
   | ({ type: 'settings'; settings: OpsSettings } & Actor)
   | ({ type: 'inviteStaff'; staff: Omit<Staff, 'id' | 'lastActiveAt' | 'active'> } & Actor)
-  | ({ type: 'staffActive'; id: string; active: boolean } & Actor);
+  | ({ type: 'staffActive'; id: string; active: boolean } & Actor)
+  | ({ type: 'updateStaff'; id: string; changes: Partial<Pick<Staff, 'name' | 'email'>> } & Actor)
+  /** Records an admin action that happens outside this store (e.g. branding changes). */
+  | ({ type: 'audit'; action: string; target: string } & Actor);
 
 const nowIso = () => new Date().toISOString();
 
-let idCounter = Date.now() % 100000;
-const nextId = (prefix: string) => `${prefix}-${++idCounter}`;
 
 function audit(data: OpsData, actor: string, action: string, target: string): OpsData {
-  return { ...data, audit: [{ id: nextId('AU'), at: nowIso(), actor, action, target }, ...data.audit].slice(0, 300) };
+  return { ...data, audit: [{ id: uniqueId('AU'), at: nowIso(), actor, action, target }, ...data.audit].slice(0, 300) };
 }
 
 function patchShipment(data: OpsData, id: string, fn: (s: Shipment) => Shipment): OpsData {
@@ -203,7 +206,7 @@ function reducer(data: OpsData, action: OpsAction): OpsData {
       return {
         ...data,
         deposits: [
-          { id: nextId('DP'), riderId: action.riderId, amount: action.amount, at: nowIso(), reference: action.reference, status: 'pending' },
+          { id: uniqueId('DP'), riderId: action.riderId, amount: action.amount, at: nowIso(), reference: action.reference, status: 'pending' },
           ...data.deposits,
         ],
       };
@@ -242,7 +245,7 @@ function reducer(data: OpsData, action: OpsAction): OpsData {
       const next = {
         ...data,
         announcements: [
-          { id: nextId('AN'), title: action.title, body: action.body, audience: action.audience, at: nowIso(), author: action.actor },
+          { id: uniqueId('AN'), title: action.title, body: action.body, audience: action.audience, at: nowIso(), author: action.actor },
           ...data.announcements,
         ],
       };
@@ -258,7 +261,7 @@ function reducer(data: OpsData, action: OpsAction): OpsData {
     case 'inviteStaff': {
       const next = {
         ...data,
-        staff: [...data.staff, { ...action.staff, id: nextId('ST'), active: true, lastActiveAt: nowIso() }],
+        staff: [...data.staff, { ...action.staff, id: uniqueId('ST'), active: true, lastActiveAt: nowIso() }],
       };
       return audit(next, action.actor, 'Invited staff member', action.staff.email);
     }
@@ -268,6 +271,19 @@ function reducer(data: OpsData, action: OpsAction): OpsData {
       const next = { ...data, staff: data.staff.map((s) => (s.id === action.id ? { ...s, active: action.active } : s)) };
       return audit(next, action.actor, action.active ? 'Reactivated staff' : 'Deactivated staff', member?.name ?? action.id);
     }
+
+    case 'updateStaff': {
+      const member = data.staff.find((s) => s.id === action.id);
+      if (!member) return data;
+      const updated = { ...member, ...action.changes };
+      const next = { ...data, staff: data.staff.map((s) => (s.id === action.id ? updated : s)) };
+      // Someone renaming themselves is logged under the new name, which is what the team now sees.
+      const actor = action.actor === member.name ? updated.name : action.actor;
+      return audit(next, actor, 'Updated staff profile', updated.name);
+    }
+
+    case 'audit':
+      return audit(data, action.actor, action.action, action.target);
   }
 }
 
@@ -291,18 +307,23 @@ export function OpsStateProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((raw) => {
-        const saved = raw ? (JSON.parse(raw) as OpsData) : null;
-        if (saved?.version === 1 && Array.isArray(saved.shipments)) dispatch({ type: 'load', data: saved });
+    let cancelled = false;
+    readJson(STORAGE_KEY)
+      .then((saved) => {
+        const migrated = migrateOpsData(saved);
+        if (!cancelled && migrated) dispatch({ type: 'load', data: migrated });
       })
-      .catch(() => {})
-      .finally(() => setReady(true));
+      .finally(() => {
+        if (!cancelled) setReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
     if (!ready) return;
-    const handle = setTimeout(() => AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data)).catch(() => {}), 300);
+    const handle = setTimeout(() => writeJson(STORAGE_KEY, data), 300);
     return () => clearTimeout(handle);
   }, [data, ready]);
 

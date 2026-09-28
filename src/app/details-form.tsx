@@ -1,5 +1,5 @@
 import { type ReactNode, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 
 import { DateField } from '@/components/date-field';
 import {
@@ -12,10 +12,11 @@ import {
   PersonIcon,
   PinOutlineIcon,
 } from '@/components/icons';
+import { Text } from '@/components/text';
 import { IconInput, ScreenHeader, SelectSheet } from '@/components/ui';
-import { Colors, cardShadow } from '@/constants/theme';
 import { PROVINCES } from '@/data/content';
 import { type Details, useAppState } from '@/state/app-state';
+import { cardShadow, makeStyles } from '@/theme';
 
 function SelectRow({
   icon,
@@ -28,6 +29,7 @@ function SelectRow({
   value: string;
   onPress: () => void;
 }) {
+  const styles = useStyles();
   return (
     <Pressable
       accessibilityRole="button"
@@ -43,6 +45,7 @@ function SelectRow({
 }
 
 export default function DetailsFormScreen() {
+  const styles = useStyles();
   const { details, saveDetails, user } = useAppState();
   const [form, setForm] = useState<Details>({ ...details, email: details.email || user?.email || '' });
   const [sheet, setSheet] = useState<'province' | 'district' | null>(null);
@@ -161,12 +164,12 @@ export default function DetailsFormScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#EFEFEF' },
+const useStyles = makeStyles(({ colors: C }) => ({
+  screen: { flex: 1, backgroundColor: C.screenBg },
   content: { paddingTop: 12, paddingHorizontal: 14, paddingBottom: 32 },
   card: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingHorizontal: 16, paddingTop: 20, paddingBottom: 24, ...cardShadow },
   subtitle: { textAlign: 'center', fontSize: 16, color: '#1F2937', marginBottom: 24 },
-  legend: { fontSize: 15, color: Colors.textMuted, letterSpacing: 0.4, marginLeft: 4, marginBottom: 20 },
+  legend: { fontSize: 15, color: C.muted, letterSpacing: 0.4, marginLeft: 4, marginBottom: 20 },
   group: { gap: 12 },
   field: { backgroundColor: '#F1F3F5' },
   fieldText: { fontSize: 15 },
@@ -182,4 +185,4 @@ const styles = StyleSheet.create({
   selectLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   selectIcon: { marginRight: 14, width: 24, alignItems: 'center' },
   selectText: { fontSize: 15, color: '#374151' },
-});
+}));

@@ -39,3 +39,12 @@ Docs: https://docs.expo.dev/eas/index.md
 - If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
 - Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
 - Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+
+## Project conventions (theming & branding)
+
+- Colours: never hard-code brand hex values. Use `makeStyles(({ colors: C }) => ({ … }))` + `const styles = useStyles()` for stylesheets and `useColors()` for inline colours. Tokens live in `src/theme/palette.ts` (`primary*` follow the admin-selected brand colour; `danger`, `success`, `amber` are fixed status colours).
+- Text: import `Text` and `TextInput` from `@/components/text`, not from `react-native`. They apply the brand font (per-weight font files) and the text-size setting.
+- Brand name, logos and contact details come from `useBrand()` (`src/state/branding-state.tsx`); do not write "Karnali Smart Group" / "KSG" in UI code.
+- Demo identities (Hasta Pun) are in `src/constants/identity.ts`.
+- Route params are untrusted: narrow them with `oneOf()` from `src/utils/params.ts`.
+- Persisted stores use `usePersistedState` (`src/state/persist.ts`) with a module-level `hydrate` that migrates older saved data.

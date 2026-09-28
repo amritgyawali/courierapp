@@ -1,11 +1,12 @@
 import { type Href, router } from 'expo-router';
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import { NepalSkyline } from '@/components/brand';
 import { BranchListIcon, ContactCardIcon, GearIcon, GiftIcon, InfoIcon } from '@/components/icons';
+import { Text } from '@/components/text';
 import { ScreenHeader } from '@/components/ui';
-import { Colors, shadow } from '@/constants/theme';
+import { makeStyles, shadow } from '@/theme';
 
 const ITEMS: { label: string; icon: ReactNode; href: Href }[] = [
   { label: 'Branch List', icon: <BranchListIcon />, href: '/branches' },
@@ -16,6 +17,7 @@ const ITEMS: { label: string; icon: ReactNode; href: Href }[] = [
 ];
 
 export default function MoreScreen() {
+  const styles = useStyles();
   return (
     <View style={styles.screen}>
       <ScreenHeader title="More" />
@@ -36,8 +38,8 @@ export default function MoreScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#F3F4F6' },
+const useStyles = makeStyles(({ colors: C }) => ({
+  screen: { flex: 1, backgroundColor: C.screenBg },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -58,5 +60,5 @@ const styles = StyleSheet.create({
     boxShadow: shadow(4, 28, 0.07),
   },
   tileIcon: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
-  tileLabel: { fontSize: 15, fontWeight: '600', color: Colors.black, letterSpacing: -0.2 },
-});
+  tileLabel: { fontSize: 15, fontWeight: '600', color: C.textStrong, letterSpacing: -0.2 },
+}));

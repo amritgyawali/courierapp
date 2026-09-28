@@ -1,11 +1,12 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import { useRef, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CloseIcon, ScanIcon } from '@/components/portal/icons';
-import { PortalColors as C } from '@/constants/theme';
+import { Text, TextInput } from '@/components/text';
+import { makeStyles } from '@/theme';
 
 /**
  * Full-screen barcode / QR scanner with a manual entry fallback (no camera, permission denied,
@@ -24,6 +25,7 @@ export function ScannerModal({
   title?: string;
   hint?: string;
 }) {
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const [permission, requestPermission] = useCameraPermissions();
   const [manual, setManual] = useState('');
@@ -114,7 +116,7 @@ export function ScannerModal({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   screen: { flex: 1, backgroundColor: '#0B0B0F' },
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingBottom: 12 },
   title: { color: '#FFFFFF', fontSize: 18, fontWeight: '700' },
@@ -140,8 +142,8 @@ const styles = StyleSheet.create({
     padding: 32,
   },
   permissionText: { color: '#E5E7EB', fontSize: 14, textAlign: 'center', lineHeight: 20 },
-  permissionButton: { backgroundColor: C.red, borderRadius: 12, paddingHorizontal: 18, paddingVertical: 11 },
-  permissionButtonText: { color: '#FFFFFF', fontWeight: '700', fontSize: 14 },
+  permissionButton: { backgroundColor: C.primary, borderRadius: 12, paddingHorizontal: 18, paddingVertical: 11 },
+  permissionButtonText: { color: C.onPrimary, fontWeight: '700', fontSize: 14 },
   bottom: { backgroundColor: '#FFFFFF', borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 18, gap: 12 },
   hint: { fontSize: 13, color: C.muted, textAlign: 'center' },
   manualRow: { flexDirection: 'row', gap: 10 },
@@ -156,6 +158,6 @@ const styles = StyleSheet.create({
     minHeight: 48,
     outlineWidth: 0,
   },
-  go: { backgroundColor: C.red, borderRadius: 12, paddingHorizontal: 18, alignItems: 'center', justifyContent: 'center' },
-  goText: { color: '#FFFFFF', fontWeight: '700', fontSize: 15 },
-});
+  go: { backgroundColor: C.primary, borderRadius: 12, paddingHorizontal: 18, alignItems: 'center', justifyContent: 'center' },
+  goText: { color: C.onPrimary, fontWeight: '700', fontSize: 15 },
+}));

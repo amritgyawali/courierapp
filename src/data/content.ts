@@ -61,10 +61,11 @@ export const SERVICES = [
   },
 ];
 
+/** About Us answers. `{brand}` is replaced with the app name set in Admin → Branding. */
 export const ABOUT_SECTIONS = [
   {
     title: 'What we do:',
-    body: 'Karnali Smart Group is a courier and logistics company delivering parcels, documents and e-commerce orders across Nepal and internationally.',
+    body: '{brand} is a courier and logistics company delivering parcels, documents and e-commerce orders across Nepal and internationally.',
   },
   {
     title: 'Where do we ship to:',
@@ -92,20 +93,23 @@ export const ABOUT_SECTIONS = [
   },
 ];
 
-export const CONTACT = {
-  address: 'Karnali Smart Group Building, 51 Muni Bhairab Marga, Tinkune, KMC-32, Kathmandu, Nepal',
-  emails: ['sales@karnalismartgroup.com', 'support@karnalismartgroup.com'],
-  phone: '+977 01 519 9684',
-  phoneHref: 'tel:+977015199684',
-  latitude: 27.6866,
-  longitude: 85.3486,
-};
+/** Head office pin on the Contact Us map. */
+export const HQ_LOCATION = { latitude: 27.6866, longitude: 85.3486 };
 
-export const SOCIAL_LINKS = {
+/**
+ * Contact details shown on Contact Us and About Us until an admin edits them in
+ * Admin → Branding & Appearance (the social links are unverified placeholders).
+ */
+export const DEFAULT_SUPPORT_CONTACTS = {
+  phone: '+977 01 519 9684',
+  salesEmail: 'sales@karnalismartgroup.com',
+  supportEmail: 'support@karnalismartgroup.com',
+  address: 'Karnali Smart Group Building, 51 Muni Bhairab Marga, Tinkune, KMC-32, Kathmandu, Nepal',
   website: 'https://karnalismartgroup.com',
   facebook: 'https://www.facebook.com/karnalismartgroup',
   instagram: 'https://www.instagram.com/karnalismartgroup',
   linkedin: 'https://www.linkedin.com/company/karnalismartgroup',
   twitter: 'https://twitter.com/karnalismartgroup',
-  email: 'mailto:support@karnalismartgroup.com',
 };
+
+export type SupportContacts = typeof DEFAULT_SUPPORT_CONTACTS;

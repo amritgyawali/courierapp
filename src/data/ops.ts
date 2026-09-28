@@ -6,6 +6,7 @@
  * tickets…) relative to "now", so every dashboard looks live. Replace it with the KSG operations
  * API; screens only depend on the types and the pure selectors in this file.
  */
+import { DEMO_ADMIN_EMAIL, DEMO_PERSON_NAME, DEMO_VENDOR_BUSINESS_NAME, LEGACY_NAMES } from '@/constants/identity';
 import { startOfDay } from '@/utils/format';
 
 // ---------------------------------------------------------------------------
@@ -187,8 +188,11 @@ export type OpsSettings = {
   workingHours: string;
 };
 
+/** Bump when the stored shape changes, and teach `migrateOpsData` the upgrade. */
+export const OPS_DATA_VERSION = 2;
+
 export type OpsData = {
-  version: 1;
+  version: typeof OPS_DATA_VERSION;
   generatedAt: string;
   hubs: Hub[];
   merchants: Merchant[];
@@ -329,6 +333,9 @@ export function quote(card: RateCard, zone: ZoneId, weightKg: number, cod: numbe
 // ---------------------------------------------------------------------------
 
 const DAY = 24 * 60 * 60 * 1000;
+
+/** Rounded percentage; 0 when there is nothing to divide by. */
+const percentOf = (part: number, whole: number) => (whole > 0 ? Math.round((part / whole) * 100) : 0);
 
 const onDay = (iso: string | undefined, day: Date) =>
   !!iso && startOfDay(new Date(iso)).getTime() === startOfDay(day).getTime();
@@ -538,7 +545,7 @@ export function merchantStats(data: OpsData, merchantId: string) {
     active: all.filter((s) => !isClosed(s)).length,
     delivered: delivered.length,
     returned: all.filter((s) => s.status === 'returned' || s.status === 'returning').length,
-    successRate: all.length ? Math.round((delivered.length / all.filter((s) => s.status !== 'cancelled').length) * 100) : 0,
+    successRate: percentOf(delivered.length, all.filter((s) => s.status !== 'cancelled').length),
     codDelivered,
     charges,
     paid,
@@ -711,7 +718,7 @@ const HUBS: Hub[] = [
 ];
 
 const MERCHANTS: [string, string, string, KycStatus, boolean][] = [
-  ['Trending Shop Nepal', 'Aakash Rai', 'KTM', 'verified', true],
+  [DEMO_VENDOR_BUSINESS_NAME, DEMO_PERSON_NAME, 'KTM', 'verified', true],
   ['Everest Electronics', 'Prakash Shrestha', 'KTM', 'verified', true],
   ['Thamel Fashion House', 'Srijana Tamang', 'KTM', 'verified', true],
   ['Pokhara Organics', 'Kiran Gurung', 'PKR', 'verified', true],
@@ -860,7 +867,9 @@ export function createSampleOps(now = new Date()): OpsData {
       if (status === 'returned') chain.push('failed', 'returning', 'returned');
       if (status === 'cancelled') chain.push('cancelled');
 
-      const span = daysAgo === 0 ? Math.max(30 * 60000, now.getTime() - created - 5 * 60000) : int(20, 40) * HOUR;
+      // Events never run past "now": a parcel booked late yesterday cannot have been delivered tomorrow.
+      const elapsed = Math.max(60000, now.getTime() - created - 5 * 60000);
+      const span = daysAgo === 0 ? elapsed : Math.min(int(20, 40) * HOUR, elapsed);
       const step = span / Math.max(1, chain.length);
       const events: ShipmentEvent[] = chain.map((st, i) => {
         const at = created + Math.round(i * step);
@@ -1037,7 +1046,7 @@ export function createSampleOps(now = new Date()): OpsData {
       body: 'Hubs stay open until 8 PM through the festival season. Riders on evening shifts get a Rs. 150 bonus per day.',
       audience: 'all',
       at: iso(now.getTime() - 5 * HOUR),
-      author: 'Sunita Karki',
+      author: DEMO_PERSON_NAME,
     },
     {
       id: 'AN-2',
@@ -1058,7 +1067,7 @@ export function createSampleOps(now = new Date()): OpsData {
   ];
 
   const staff: Staff[] = [
-    { id: 'ST-1', name: 'Sunita Karki', email: 'sunita.karki@ksg.example', role: 'super-admin', active: true, lastActiveAt: iso(now.getTime()) },
+    { id: CURRENT_ADMIN_ID, name: DEMO_PERSON_NAME, email: DEMO_ADMIN_EMAIL, role: 'super-admin', active: true, lastActiveAt: iso(now.getTime()) },
     { id: 'ST-2', name: 'Bikash Shrestha', email: 'bikash.shrestha@ksg.example', role: 'ops-manager', hubId: 'KTM', active: true, lastActiveAt: iso(now.getTime() - 40 * 60000) },
     { id: 'ST-3', name: 'Rekha Thapa', email: 'rekha.thapa@ksg.example', role: 'dispatcher', hubId: 'KTM', active: true, lastActiveAt: iso(now.getTime() - 12 * 60000) },
     { id: 'ST-4', name: 'Manoj Adhikari', email: 'manoj.adhikari@ksg.example', role: 'finance', active: true, lastActiveAt: iso(now.getTime() - 3 * HOUR) },
@@ -1070,13 +1079,13 @@ export function createSampleOps(now = new Date()): OpsData {
   const audit: AuditEntry[] = [
     { id: 'AU-5', at: iso(now.getTime() - 25 * 60000), actor: 'Rekha Thapa', action: 'Assigned 6 parcels', target: 'Sagar Magar' },
     { id: 'AU-4', at: iso(now.getTime() - 2 * HOUR), actor: 'Manoj Adhikari', action: 'Verified COD deposit', target: 'DP-5001' },
-    { id: 'AU-3', at: iso(now.getTime() - 4 * HOUR), actor: 'Sunita Karki', action: 'Published announcement', target: 'Festival rush: extended hours' },
+    { id: 'AU-3', at: iso(now.getTime() - 4 * HOUR), actor: DEMO_PERSON_NAME, action: 'Published announcement', target: 'Festival rush: extended hours' },
     { id: 'AU-2', at: iso(now.getTime() - 26 * HOUR), actor: 'Bikash Shrestha', action: 'Approved rider KYC', target: 'Dipesh Poudel' },
-    { id: 'AU-1', at: iso(now.getTime() - 50 * HOUR), actor: 'Sunita Karki', action: 'Updated rate card', target: 'Inside Valley' },
+    { id: 'AU-1', at: iso(now.getTime() - 50 * HOUR), actor: DEMO_PERSON_NAME, action: 'Updated rate card', target: 'Inside Valley' },
   ];
 
   return {
-    version: 1,
+    version: OPS_DATA_VERSION,
     generatedAt: iso(now.getTime()),
     hubs: HUBS,
     merchants,
@@ -1090,5 +1099,51 @@ export function createSampleOps(now = new Date()): OpsData {
     audit,
     rateCard: DEFAULT_RATE_CARD,
     settings: { autoAssign: true, otpRequired: true, riderCashLimit: 25000, maxAttempts: 3, workingHours: '9:00 AM – 7:00 PM' },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Stored data migrations
+// ---------------------------------------------------------------------------
+
+/**
+ * Upgrades operations data saved by an earlier app version, or returns `null` when it is not
+ * recognisable (the caller then keeps the fresh sample network).
+ *
+ * v1 → v2: the demo admin, the first demo merchant and their audit / announcement entries were
+ * renamed to the current demo identity.
+ */
+export function migrateOpsData(saved: unknown): OpsData | null {
+  if (typeof saved !== 'object' || saved === null) return null;
+  const data = saved as Partial<OpsData> & { version?: number };
+  if (!Array.isArray(data.shipments) || !Array.isArray(data.staff) || !Array.isArray(data.merchants)) return null;
+  if (data.version === OPS_DATA_VERSION) return data as OpsData;
+  if (data.version !== 1) return null;
+
+  const rename = (name: string) => (name === LEGACY_NAMES.admin ? DEMO_PERSON_NAME : name);
+  return {
+    ...(data as OpsData),
+    version: OPS_DATA_VERSION,
+    staff: data.staff.map((st) =>
+      st.id === CURRENT_ADMIN_ID && st.name === LEGACY_NAMES.admin
+        ? { ...st, name: DEMO_PERSON_NAME, email: st.email === LEGACY_NAMES.adminEmail ? DEMO_ADMIN_EMAIL : st.email }
+        : st,
+    ),
+    merchants: data.merchants.map((m) =>
+      m.name === LEGACY_NAMES.vendorBusiness
+        ? { ...m, name: DEMO_VENDOR_BUSINESS_NAME, owner: m.owner === LEGACY_NAMES.merchantOwner ? DEMO_PERSON_NAME : m.owner }
+        : m,
+    ),
+    shipments: data.shipments.map((sh) =>
+      sh.events.some((e) => e.actor === LEGACY_NAMES.vendorBusiness)
+        ? { ...sh, events: sh.events.map((e) => (e.actor === LEGACY_NAMES.vendorBusiness ? { ...e, actor: DEMO_VENDOR_BUSINESS_NAME } : e)) }
+        : sh,
+    ),
+    tickets: (data.tickets ?? []).map((t) => ({
+      ...t,
+      requester: t.requester === LEGACY_NAMES.vendorBusiness ? DEMO_VENDOR_BUSINESS_NAME : t.requester,
+    })),
+    announcements: (data.announcements ?? []).map((a) => ({ ...a, author: rename(a.author) })),
+    audit: (data.audit ?? []).map((a) => ({ ...a, actor: rename(a.actor) })),
   };
 }

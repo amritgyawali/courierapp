@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { useAdmin } from '@/components/admin/use-admin';
 import { DateButton } from '@/components/portal/date-button';
 import { BarsIcon, CalendarOutlineIcon, DownloadIcon, OfficeIcon, StoreSmallIcon } from '@/components/portal/icons';
 import { Card, Chip, PortalHeader, SectionHeading } from '@/components/portal/ui';
 import { BarChart, Button, ProgressBar, StatTile } from '@/components/portal/widgets';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { deliveredOn, shipmentsBetween, shipmentsCsv, STATUS_META, statusBreakdown } from '@/data/ops';
+import { useBrand } from '@/state/branding-state';
+import { makeStyles, useColors } from '@/theme';
 import { addDays, daysInclusive, formatDayMonthYear, formatRs, formatShortDate, percent, startOfDay } from '@/utils/format';
 import { shareText } from '@/utils/links';
 
@@ -19,7 +21,10 @@ const INFO = {
 };
 
 export default function ReportsScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const { data, lookup } = useAdmin();
+  const { shortName } = useBrand();
   const today = startOfDay(new Date());
   const [preset, setPreset] = useState<Preset>('7d');
   const [from, setFrom] = useState(addDays(today, -6));
@@ -117,12 +122,12 @@ export default function ReportsScreen() {
               label: formatShortDate(d).split(' ')[1],
               values: [data.shipments.filter((s) => startOfDay(new Date(s.createdAt)).getTime() === d.getTime()).length, deliveredOn(data, d).length],
             }))}
-            colors={[C.red, '#16A34A']}
+            colors={[C.primary, '#16A34A']}
             legend={['Booked', 'Delivered']}
           />
         </Card>
 
-        <SectionHeading icon={<BarsIcon size={20} color={C.red} />} title="Status mix" />
+        <SectionHeading icon={<BarsIcon size={20} color={C.primary} />} title="Status mix" />
         <Card style={styles.card}>
           {breakdown.length === 0 && <Text style={styles.muted}>No shipments booked in this range.</Text>}
           {breakdown.map(({ status, count }) => (
@@ -138,7 +143,7 @@ export default function ReportsScreen() {
           ))}
         </Card>
 
-        <SectionHeading icon={<StoreSmallIcon size={20} color={C.red} />} title="Top merchants" />
+        <SectionHeading icon={<StoreSmallIcon size={20} color={C.primary} />} title="Top merchants" />
         <Card style={styles.card}>
           {merchants.length === 0 && <Text style={styles.muted}>No merchant activity in this range.</Text>}
           {merchants.map(({ m, count }, i) => (
@@ -152,7 +157,7 @@ export default function ReportsScreen() {
           ))}
         </Card>
 
-        <SectionHeading icon={<OfficeIcon size={20} color={C.red} />} title="Hub performance" />
+        <SectionHeading icon={<OfficeIcon size={20} color={C.primary} />} title="Hub performance" />
         <Card style={styles.card}>
           <View style={[styles.tableRow, styles.tableHeader]}>
             <Text style={[styles.tableName, styles.th]}>Hub</Text>
@@ -175,7 +180,7 @@ export default function ReportsScreen() {
         <Button
           title={`Export ${booked.length} shipments (CSV)`}
           icon={(c) => <DownloadIcon size={18} color={c} />}
-          onPress={() => shareText(`KSG report ${formatDayMonthYear(from)}–${formatDayMonthYear(to)}`, shipmentsCsv(data, booked))}
+          onPress={() => shareText(`${shortName} report ${formatDayMonthYear(from)}–${formatDayMonthYear(to)}`, shipmentsCsv(data, booked))}
         />
       </ScrollView>
     </View>
@@ -183,6 +188,8 @@ export default function ReportsScreen() {
 }
 
 function DateBox({ label, date }: { label: string; date: Date }) {
+  const styles = useStyles();
+  const C = useColors();
   return (
     <View style={styles.dateBox}>
       <CalendarOutlineIcon size={17} color={C.faint} />
@@ -194,7 +201,7 @@ function DateBox({ label, date }: { label: string; date: Date }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   screen: { flex: 1, backgroundColor: C.screenBg },
   content: { padding: 12, gap: 12, paddingBottom: 40 },
   row: { flexDirection: 'row', gap: 10 },
@@ -227,4 +234,4 @@ const styles = StyleSheet.create({
   },
   dateLabel: { fontSize: 11, color: C.muted },
   dateValue: { fontSize: 14, fontWeight: '700', color: C.textStrong },
-});
+}));

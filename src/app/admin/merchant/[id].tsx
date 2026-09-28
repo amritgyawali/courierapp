@@ -1,19 +1,24 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { useAdmin } from '@/components/admin/use-admin';
 import { ShipmentCard } from '@/components/ops/shipment';
 import { MessageIcon, PhoneOutlineIcon, StoreSmallIcon } from '@/components/portal/icons';
 import { Badge, Card, EmptyState, PortalHeader } from '@/components/portal/ui';
 import { Button, KeyValue, useNow, useToast } from '@/components/portal/widgets';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { KYC_META, merchantStats } from '@/data/ops';
+import { useBrand } from '@/state/branding-state';
+import { makeStyles, useColors } from '@/theme';
 import { formatDate, formatRs } from '@/utils/format';
 import { callPhone, sendEmail } from '@/utils/links';
 
 export default function AdminMerchantDetail() {
+  const styles = useStyles();
+  const C = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, dispatch, actor, lookup } = useAdmin();
+  const { appName } = useBrand();
   const toast = useToast();
   const now = useNow();
 
@@ -22,7 +27,7 @@ export default function AdminMerchantDetail() {
     return (
       <View style={styles.screen}>
         <PortalHeader title="Merchant" back backHref="/admin/merchants" />
-        <EmptyState icon={<StoreSmallIcon size={30} color={C.red} />} title="Merchant not found" message={`No merchant with ID ${id}.`} />
+        <EmptyState icon={<StoreSmallIcon size={30} color={C.primary} />} title="Merchant not found" message={`No merchant with ID ${id}.`} />
       </View>
     );
   }
@@ -36,7 +41,7 @@ export default function AdminMerchantDetail() {
       <ScrollView contentContainerStyle={styles.content}>
         <Card style={styles.profile}>
           <View style={styles.logo}>
-            <StoreSmallIcon size={30} color={C.red} />
+            <StoreSmallIcon size={30} color={C.primary} />
           </View>
           <Text style={styles.name}>{m.name}</Text>
           <Text style={styles.meta}>
@@ -53,7 +58,7 @@ export default function AdminMerchantDetail() {
               variant="soft"
               title="Email"
               icon={(c) => <MessageIcon size={16} color={c} />}
-              onPress={() => sendEmail(m.email, 'Karnali Smart Group')}
+              onPress={() => sendEmail(m.email, appName)}
               style={styles.flex}
             />
           </View>
@@ -63,7 +68,7 @@ export default function AdminMerchantDetail() {
           <Kpi label="Shipments" value={stats.total} />
           <Kpi label="In progress" value={stats.active} />
           <Kpi label="Success" value={`${stats.successRate}%`} color="#16A34A" />
-          <Kpi label="Returns" value={stats.returned} color={C.red} />
+          <Kpi label="Returns" value={stats.returned} color={C.dangerStrong} />
         </View>
 
         <Card style={styles.card}>
@@ -134,6 +139,7 @@ export default function AdminMerchantDetail() {
 }
 
 function Kpi({ label, value, color }: { label: string; value: string | number; color?: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.kpi}>
       <Text style={[styles.kpiValue, color ? { color } : null]}>{value}</Text>
@@ -142,12 +148,12 @@ function Kpi({ label, value, color }: { label: string; value: string | number; c
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   content: { padding: 12, gap: 12, paddingBottom: 40 },
   profile: { padding: 18, alignItems: 'center', gap: 6 },
-  logo: { width: 64, height: 64, borderRadius: 18, backgroundColor: C.redTint, alignItems: 'center', justifyContent: 'center' },
+  logo: { width: 64, height: 64, borderRadius: 18, backgroundColor: C.primaryTint, alignItems: 'center', justifyContent: 'center' },
   name: { fontSize: 20, fontWeight: '800', color: C.textStrong, marginTop: 6, textAlign: 'center' },
   meta: { fontSize: 12, color: C.muted },
   badges: { flexDirection: 'row', gap: 6, marginTop: 4 },
@@ -160,4 +166,4 @@ const styles = StyleSheet.create({
   card: { padding: 14 },
   cardTitle: { fontSize: 15, fontWeight: '700', color: C.textStrong, marginBottom: 6 },
   section: { fontSize: 15, fontWeight: '700', color: C.navy, marginTop: 4 },
-});
+}));

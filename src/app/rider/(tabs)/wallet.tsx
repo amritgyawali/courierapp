@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { BankIcon, CashIcon, CoinsIcon, TrendUpIcon, WalletIcon } from '@/components/portal/icons';
 import { Badge, Card, Chip, PortalHeader, SectionHeading } from '@/components/portal/ui';
 import { Button, KeyValue, ProgressBar, Sheet, TextField, useNow, useToast } from '@/components/portal/widgets';
 import { useRider } from '@/components/rider/use-rider';
-import { PortalColors as C, shadow } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { RIDER_PAY, riderEarnings } from '@/data/ops';
+import { makeStyles, shadow, useColors } from '@/theme';
 import { addDays, formatDate, formatRs, formatTime, isSameDay, startOfDay, timeAgo } from '@/utils/format';
 
 type Tab = 'cod' | 'earnings';
@@ -18,6 +19,8 @@ const INFO = {
 };
 
 export default function RiderWallet() {
+  const styles = useStyles();
+  const C = useColors();
   const now = useNow();
   const { data, dispatch, me, hub, stats, actor } = useRider(now);
   const toast = useToast();
@@ -80,10 +83,10 @@ export default function RiderWallet() {
           <View style={styles.row}>
             <MiniStat label="Collected today" value={formatRs(stats.codCollectedToday)} />
             <MiniStat label="Awaiting verification" value={formatRs(stats.pendingDeposit)} color={C.amber} />
-            <MiniStat label="Still to collect" value={formatRs(stats.codToCollect)} color={C.red} />
+            <MiniStat label="Still to collect" value={formatRs(stats.codToCollect)} color={C.primary} />
           </View>
 
-          <SectionHeading icon={<CoinsIcon size={20} color={C.red} />} title="Today’s collections" />
+          <SectionHeading icon={<CoinsIcon size={20} color={C.primary} />} title="Today’s collections" />
           <Card>
             {collectionsToday.length === 0 && <Text style={styles.empty}>No COD collected yet today.</Text>}
             {collectionsToday.map((s, i) => (
@@ -99,7 +102,7 @@ export default function RiderWallet() {
             ))}
           </Card>
 
-          <SectionHeading icon={<BankIcon size={20} color={C.red} />} title="Deposits" />
+          <SectionHeading icon={<BankIcon size={20} color={C.primary} />} title="Deposits" />
           <Card>
             {deposits.length === 0 && <Text style={styles.empty}>No deposits yet.</Text>}
             {deposits.map((d, i) => (
@@ -143,13 +146,13 @@ export default function RiderWallet() {
 
           <Card style={styles.card}>
             <View style={styles.targetTop}>
-              <WalletIcon size={20} color={C.red} />
+              <WalletIcon size={20} color={C.primary} />
               <Text style={styles.targetTitle}>Today’s target</Text>
               <Text style={styles.targetValue}>
                 {todayDeliveries}/{RIDER_PAY.dailyTarget}
               </Text>
             </View>
-            <ProgressBar value={targetPct} color={targetPct >= 100 ? '#16A34A' : C.red} height={10} />
+            <ProgressBar value={targetPct} color={targetPct >= 100 ? '#16A34A' : C.primary} height={10} />
             <Text style={styles.lineMeta}>
               {targetPct >= 100
                 ? `Target reached — ${formatRs(RIDER_PAY.targetBonus)} bonus earned!`
@@ -159,7 +162,7 @@ export default function RiderWallet() {
 
           {earnings.days.length > 0 && (
             <>
-              <SectionHeading icon={<TrendUpIcon size={20} color={C.red} />} title="By day" />
+              <SectionHeading icon={<TrendUpIcon size={20} color={C.primary} />} title="By day" />
               <Card>
                 {earnings.days.map((d, i) => (
                   <View key={d.day.toISOString()} style={[styles.line, i > 0 && styles.divider]}>
@@ -187,6 +190,7 @@ export default function RiderWallet() {
 }
 
 function MiniStat({ label, value, color }: { label: string; value: string; color?: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.mini}>
       <Text style={[styles.miniValue, color ? { color } : null]} numberOfLines={1} adjustsFontSizeToFit>
@@ -197,13 +201,13 @@ function MiniStat({ label, value, color }: { label: string; value: string; color
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   tabs: { flexDirection: 'row', gap: 8, padding: 12, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#F1F2F4' },
   content: { padding: 12, gap: 12, paddingBottom: 40 },
-  hero: { backgroundColor: C.red, borderRadius: 16, padding: 18, gap: 8, boxShadow: shadow(2, 10, 0.18, C.red) },
-  earnHero: { backgroundColor: '#0F766E', boxShadow: shadow(2, 10, 0.18, '#0F766E') },
+  hero: { backgroundColor: C.primary, borderRadius: 16, padding: 18, gap: 8, boxShadow: shadow(2, 10, 0.18, C.primary) },
+  earnHero: { backgroundColor: C.successStrong, boxShadow: shadow(2, 10, 0.18, C.successStrong) },
   heroLabel: { color: '#FFFFFF', opacity: 0.9, fontSize: 13, fontWeight: '600' },
   heroValue: { color: '#FFFFFF', fontSize: 32, fontWeight: '800' },
   heroMeta: { color: '#FFFFFF', opacity: 0.9, fontSize: 12 },
@@ -222,4 +226,4 @@ const styles = StyleSheet.create({
   targetTop: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   targetTitle: { flex: 1, fontSize: 14, fontWeight: '700', color: C.textStrong },
   targetValue: { fontSize: 16, fontWeight: '800', color: C.textStrong },
-});
+}));

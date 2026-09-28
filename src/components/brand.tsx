@@ -1,47 +1,109 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
+import { type StyleProp, type TextStyle, View } from 'react-native';
 import Svg, { Circle, Line, Path, Polygon } from 'react-native-svg';
 
-import { Colors, shadow } from '@/constants/theme';
+import { Text } from '@/components/text';
+import { useBrand } from '@/state/branding-state';
+import { makeStyles, shadow, useColors } from '@/theme';
 
-export function LogoMark({ size = 24, color = Colors.red }: { size?: number; color?: string }) {
+/** Built-in pinwheel mark, used whenever no app icon has been uploaded. */
+export function LogoMark({ size = 24, color }: { size?: number; color?: string }) {
+  const C = useColors();
+  const fill = color ?? C.primary;
   return (
     <Svg width={size} height={size} viewBox="0 0 48 48">
-      <Path d="M6 18H18V6H24V24H6V18Z" fill={color} />
-      <Path d="M42 30H30V42H24V24H42V30Z" fill={color} />
+      <Path d="M6 18H18V6H24V24H6V18Z" fill={fill} />
+      <Path d="M42 30H30V42H24V24H42V30Z" fill={fill} />
     </Svg>
   );
 }
 
-/** Large wordmark used on the Login / Register screens. */
-export function BrandLogoLarge() {
+/**
+ * Square app icon from Admin → Branding, or the built-in mark. `color` tints the built-in mark
+ * (e.g. white on the coloured portal header).
+ */
+export function AppIcon({ size = 28, color }: { size?: number; color?: string }) {
+  const { iconUri, appName } = useBrand();
+  if (!iconUri) return <LogoMark size={size} color={color} />;
   return (
-    <View style={styles.largeRow} accessibilityLabel="Karnali Smart Group Logo">
-      <LogoMark size={40} />
-      <Text style={styles.largeText}>
-        karnali <Text style={styles.largeTextLight}>smart</Text> group
+    <Image
+      source={{ uri: iconUri }}
+      style={{ width: size, height: size, borderRadius: Math.round(size * 0.22) }}
+      contentFit="cover"
+      accessibilityLabel={`${appName} icon`}
+    />
+  );
+}
+
+/** App name with the first word bold and the rest regular: **Karnali** Smart Group. */
+function Wordmark({
+  name,
+  style,
+  lightStyle,
+  lines = 1,
+}: {
+  name: string;
+  style: StyleProp<TextStyle>;
+  lightStyle: StyleProp<TextStyle>;
+  lines?: number;
+}) {
+  const [first, ...rest] = name.trim().split(/\s+/);
+  return (
+    <Text style={style} numberOfLines={lines} adjustsFontSizeToFit minimumFontScale={0.75}>
+      {first}
+      {rest.length > 0 && <Text style={lightStyle}> {rest.join(' ')}</Text>}
+    </Text>
+  );
+}
+
+/** Large logo on the Login / Register screens: the uploaded logo, or icon + wordmark. */
+export function BrandLogoLarge() {
+  const styles = useStyles();
+  const brand = useBrand();
+  return (
+    <View style={styles.largeWrap} accessibilityRole="header" accessibilityLabel={`${brand.appName} logo`}>
+      {brand.logoUri ? (
+        <Image source={{ uri: brand.logoUri }} style={styles.largeImage} contentFit="contain" />
+      ) : (
+        <View style={styles.largeRow}>
+          <AppIcon size={44} />
+          <Wordmark name={brand.appName} style={styles.largeText} lightStyle={styles.largeTextLight} lines={2} />
+        </View>
+      )}
+      {!!brand.tagline && <Text style={styles.tagline}>{brand.tagline}</Text>}
+    </View>
+  );
+}
+
+/** Compact logo at the right of customer screen headers. */
+export function BrandLogoSmall({ compact = false }: { compact?: boolean }) {
+  const styles = useStyles();
+  const brand = useBrand();
+  if (brand.logoUri) {
+    return (
+      <Image
+        source={{ uri: brand.logoUri }}
+        style={compact ? styles.smallImageCompact : styles.smallImage}
+        contentFit="contain"
+        accessibilityLabel={`${brand.appName} logo`}
+      />
+    );
+  }
+  return (
+    <View style={styles.smallRow} accessibilityLabel={`${brand.appName} logo`}>
+      <AppIcon size={compact ? 18 : 22} />
+      <Text style={[styles.smallText, compact && styles.smallTextCompact]} numberOfLines={1}>
+        {brand.appName}
       </Text>
     </View>
   );
 }
 
-/** Compact wordmark used at the right of screen headers. */
-export function BrandLogoSmall({ compact = false }: { compact?: boolean }) {
-  return (
-    <View style={styles.smallRow}>
-      <LogoMark size={compact ? 18 : 22} />
-      <Text style={[styles.smallText, compact && styles.smallTextCompact]}>karnali smart group</Text>
-    </View>
-  );
-}
-
 /** Open cardboard box with an error bubble — the shared empty-state artwork. */
-export function EmptyBoxIllustration({
-  circleSize = 192,
-  color = Colors.illustration,
-}: {
-  circleSize?: number;
-  color?: string;
-}) {
+export function EmptyBoxIllustration({ circleSize = 192, color: colorProp }: { circleSize?: number; color?: string }) {
+  const C = useColors();
+  const styles = useStyles();
+  const color = colorProp ?? C.illustration;
   const art = circleSize * 0.58;
   return (
     <View
@@ -70,6 +132,7 @@ export function EmptyBoxIllustration({
         <Circle cx={51} cy={91} r={1.5} fill={color} stroke="none" />
         <Path
           d="M75 92V81M75 81L70.5 85.5M75 81L79.5 85.5"
+          stroke={C.primary}
           strokeWidth={2.2}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -81,35 +144,36 @@ export function EmptyBoxIllustration({
 
 /** Nepal landscape silhouette (mountains, stupas, trekkers) shown above the tab bar. */
 export function NepalSkyline({ height = 80 }: { height?: number }) {
+  const C = useColors();
   return (
     <View style={{ height, width: '100%', pointerEvents: 'none' }}>
       <Svg width="100%" height="100%" viewBox="0 0 600 120" preserveAspectRatio="none">
         <Path
-          fill={Colors.skyline}
+          fill={C.skyline}
           opacity={0.35}
           d="M0,75 L45,48 L110,72 L180,38 L240,68 L320,40 L400,65 L480,32 L540,58 L600,42 L600,120 L0,120 Z"
         />
         <Path
-          fill={Colors.skyline}
+          fill={C.skyline}
           opacity={0.6}
           d="M0,88 Q30,78 60,82 Q120,70 170,88 Q210,85 240,84 L244,75 L247,75 L248,84 Q270,84 285,82 L288,68 L293,68 L295,82 Q320,83 330,78 L334,70 L337,70 L340,78 L355,79 L357,60 L361,58 L363,79 L385,80 L388,72 L392,72 L395,80 Q420,82 445,74 L450,56 L454,48 L457,48 L460,56 L466,75 Q490,78 520,72 L535,62 L550,75 L565,65 L600,78 L600,120 L0,120 Z"
         />
         <Path
-          fill={Colors.skyline}
+          fill={C.skyline}
           opacity={0.85}
           d="M0,98 Q40,94 75,97 Q115,90 150,96 Q200,98 250,94 L252,86 L254,86 L255,94 Q290,95 320,93 L323,80 L327,80 L329,93 Q360,94 390,90 L400,84 L405,84 L410,92 Q460,95 500,88 L510,78 L516,74 L522,78 L530,92 Q565,92 600,90 L600,120 L0,120 Z"
         />
-        <Polygon fill={Colors.skyline} points="268,95 272,74 276,95" />
-        <Polygon fill={Colors.skyline} points="270,74 272,66 274,74" />
-        <Circle fill={Colors.skyline} cx={455} cy={80} r={10} />
-        <Polygon fill={Colors.skyline} points="452,70 455,52 458,70" />
-        <Circle fill={Colors.skyline} cx={118} cy={79} r={2.2} />
-        <Path fill={Colors.skyline} d="M116,81 L120,81 L122,89 L119,89 L118,85 L115,89 L114,89 Z" />
-        <Circle cx={180} cy={86} r={3} fill="none" stroke={Colors.skyline} strokeWidth={1} />
-        <Circle cx={192} cy={86} r={3} fill="none" stroke={Colors.skyline} strokeWidth={1} />
+        <Polygon fill={C.skyline} points="268,95 272,74 276,95" />
+        <Polygon fill={C.skyline} points="270,74 272,66 274,74" />
+        <Circle fill={C.skyline} cx={455} cy={80} r={10} />
+        <Polygon fill={C.skyline} points="452,70 455,52 458,70" />
+        <Circle fill={C.skyline} cx={118} cy={79} r={2.2} />
+        <Path fill={C.skyline} d="M116,81 L120,81 L122,89 L119,89 L118,85 L115,89 L114,89 Z" />
+        <Circle cx={180} cy={86} r={3} fill="none" stroke={C.skyline} strokeWidth={1} />
+        <Circle cx={192} cy={86} r={3} fill="none" stroke={C.skyline} strokeWidth={1} />
         <Path
           d="M180,86 L186,81 L192,86 M186,81 L184,76 L187,76"
-          stroke={Colors.skyline}
+          stroke={C.skyline}
           strokeWidth={1}
           fill="none"
         />
@@ -118,22 +182,24 @@ export function NepalSkyline({ height = 80 }: { height?: number }) {
   );
 }
 
-const styles = StyleSheet.create({
-  largeRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  largeText: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: Colors.red,
-    letterSpacing: -0.5,
-  },
-  largeTextLight: { fontWeight: '400' },
-  smallRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  smallText: { fontSize: 17, fontWeight: '700', color: Colors.red, letterSpacing: -0.3 },
+const useStyles = makeStyles(({ colors: C }) => ({
+  largeWrap: { alignItems: 'center', gap: 10, alignSelf: 'stretch' },
+  largeRow: { flexDirection: 'row', alignItems: 'center', gap: 12, maxWidth: '100%' },
+  largeImage: { width: '80%', maxWidth: 280, height: 72 },
+  largeText: { flexShrink: 1, fontSize: 26, fontWeight: '800', color: C.primary, letterSpacing: -0.6 },
+  largeTextLight: { fontWeight: '500' },
+  tagline: { fontSize: 13, fontWeight: '500', color: C.muted, textAlign: 'center' },
+  smallRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 },
+  smallImage: { width: 120, height: 28 },
+  smallImageCompact: { width: 96, height: 22 },
+  smallText: { flexShrink: 1, fontSize: 15, fontWeight: '800', color: C.primary, letterSpacing: -0.3 },
   smallTextCompact: { fontSize: 13 },
   emptyCircle: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: C.card,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 6,
+    borderColor: C.primaryTint,
     boxShadow: shadow(1, 4, 0.05),
   },
-});
+}));

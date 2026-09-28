@@ -1,12 +1,13 @@
 import { router } from 'expo-router';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, View } from 'react-native';
 
 import { useAdmin } from '@/components/admin/use-admin';
 import { NavigationIcon, OfficeIcon, PhoneOutlineIcon } from '@/components/portal/icons';
 import { Badge, Card, PortalHeader } from '@/components/portal/ui';
 import { ProgressBar, useNow } from '@/components/portal/widgets';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { hubStats } from '@/data/ops';
+import { makeStyles, useColors } from '@/theme';
 import { callPhone, navigateTo } from '@/utils/links';
 
 const ZONE_LABEL = { valley: 'Inside Valley', city: 'Major City', outside: 'Outside Valley', remote: 'Remote' } as const;
@@ -17,6 +18,8 @@ const INFO = {
 };
 
 export default function HubsScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const { data } = useAdmin();
   const now = useNow();
   const hubs = data.hubs.map((h) => ({ hub: h, stats: hubStats(data, h.id, now) })).sort((a, b) => b.stats.load - a.stats.load);
@@ -34,7 +37,7 @@ export default function HubsScreen() {
             <Card style={styles.card}>
               <View style={styles.head}>
                 <View style={styles.icon}>
-                  <OfficeIcon size={20} color={C.red} />
+                  <OfficeIcon size={20} color={C.primary} />
                 </View>
                 <View style={styles.flex}>
                   <Text style={styles.name}>{hub.name}</Text>
@@ -62,11 +65,11 @@ export default function HubsScreen() {
 
               <View style={styles.actions}>
                 <Pressable accessibilityRole="button" onPress={() => callPhone(hub.phone)} style={styles.action}>
-                  <PhoneOutlineIcon size={16} color={C.red} />
+                  <PhoneOutlineIcon size={16} color={C.primary} />
                   <Text style={styles.actionText}>Call manager</Text>
                 </Pressable>
                 <Pressable accessibilityRole="button" onPress={() => navigateTo(hub.latitude, hub.longitude)} style={styles.action}>
-                  <NavigationIcon size={16} color={C.red} />
+                  <NavigationIcon size={16} color={C.primary} />
                   <Text style={styles.actionText}>Directions</Text>
                 </Pressable>
                 <Pressable
@@ -85,6 +88,7 @@ export default function HubsScreen() {
 }
 
 function Stat({ label, value, color }: { label: string; value: string | number; color?: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.stat}>
       <Text style={[styles.statValue, color ? { color } : null]}>{value}</Text>
@@ -93,13 +97,13 @@ function Stat({ label, value, color }: { label: string; value: string | number; 
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   list: { padding: 12, gap: 12, paddingBottom: 40 },
   card: { padding: 14, gap: 10 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  icon: { width: 44, height: 44, borderRadius: 12, backgroundColor: C.redTint, alignItems: 'center', justifyContent: 'center' },
+  icon: { width: 44, height: 44, borderRadius: 12, backgroundColor: C.primaryTint, alignItems: 'center', justifyContent: 'center' },
   name: { fontSize: 15, fontWeight: '700', color: C.textStrong },
   meta: { fontSize: 12, color: C.muted, marginTop: 2 },
   loadRow: { flexDirection: 'row', justifyContent: 'space-between' },
@@ -118,7 +122,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 9,
     borderRadius: 10,
-    backgroundColor: C.redTint,
+    backgroundColor: C.primaryTint,
   },
-  actionText: { fontSize: 12, fontWeight: '700', color: C.red },
-});
+  actionText: { fontSize: 12, fontWeight: '700', color: C.primary },
+}));

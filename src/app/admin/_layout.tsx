@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 import { useAdmin } from '@/components/admin/use-admin';
 import { type DrawerConfig, PortalDrawerProvider, useStandardUtilities } from '@/components/portal/drawer';
@@ -17,26 +17,29 @@ import {
   MegaphoneOutlineIcon,
   MessageIcon,
   OfficeIcon,
+  PaletteIcon,
   SettingsIcon,
   ShieldCheckIcon,
   StoreSmallIcon,
   WalletIcon,
 } from '@/components/portal/icons';
 import { ToastProvider } from '@/components/portal/widgets';
-import { PortalColors as C } from '@/constants/theme';
 import { approvals, ROLE_META, todaySummary } from '@/data/ops';
 import { useOps } from '@/state/ops-state';
+import { makeStyles, useColors } from '@/theme';
 
 /**
  * Admin (operations) portal. Bottom tabs for the daily loop (Dashboard, Shipments, Dispatch,
  * Fleet, Finance); everything else lives in the drawer. Detail screens stack above the tabs.
  */
 export default function AdminLayout() {
+  const styles = useStyles();
+  const C = useColors();
   const { ready } = useOps();
   if (!ready) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator color={C.red} size="large" />
+        <ActivityIndicator color={C.primary} size="large" />
       </View>
     );
   }
@@ -49,6 +52,7 @@ export default function AdminLayout() {
 }
 
 function AdminShell() {
+  const C = useColors();
   const { data, me } = useAdmin();
   const pending = approvals(data);
   const today = todaySummary(data);
@@ -72,6 +76,7 @@ function AdminShell() {
       { section: 'Administration', label: 'Announcements', href: '/admin/announcements', match: '/admin/announcements', icon: (p) => <MegaphoneOutlineIcon {...p} /> },
       { section: 'Administration', label: 'Staff & Roles', href: '/admin/staff', match: '/admin/staff', icon: (p) => <ShieldCheckIcon {...p} /> },
       { section: 'Administration', label: 'Audit Log', href: '/admin/audit', match: '/admin/audit', icon: (p) => <HistoryIcon {...p} /> },
+      { section: 'Administration', label: 'Branding & Appearance', href: '/admin/branding', match: '/admin/branding', icon: (p) => <PaletteIcon {...p} /> },
       { section: 'Administration', label: 'Settings', href: '/admin/settings', match: '/admin/settings', icon: (p) => <SettingsIcon {...p} /> },
     ],
     utilities,
@@ -89,6 +94,6 @@ function AdminShell() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: C.screenBg },
-});
+}));

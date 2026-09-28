@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import { AssignSheet } from '@/components/admin/assign-sheet';
 import { useAdmin } from '@/components/admin/use-admin';
@@ -20,16 +20,21 @@ import {
 } from '@/components/portal/icons';
 import { Card, EmptyState, PortalHeader } from '@/components/portal/ui';
 import { Avatar, Button, KeyValue, Sheet, TextField, useNow, useToast } from '@/components/portal/widgets';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { ALL_STATUSES, CLOSED_STATUSES, DUTY_META, isOverdue, quote, type ShipmentStatus, STATUS_META } from '@/data/ops';
+import { useBrand } from '@/state/branding-state';
+import { makeStyles, useColors } from '@/theme';
 import { formatDateTime, formatDuration, formatRs } from '@/utils/format';
 import { callPhone, navigateTo, sendSms, shareText } from '@/utils/links';
 
 const ASSIGNABLE: ShipmentStatus[] = ['pickup-requested', 'pickup-assigned', 'picked-up', 'at-hub', 'out-for-delivery', 'returning'];
 
 export default function AdminShipmentDetail() {
+  const styles = useStyles();
+  const C = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, dispatch, actor, lookup } = useAdmin();
+  const { appName, shortName } = useBrand();
   const toast = useToast();
   const now = useNow();
   const [assignOpen, setAssignOpen] = useState(false);
@@ -43,7 +48,7 @@ export default function AdminShipmentDetail() {
     return (
       <View style={styles.screen}>
         <PortalHeader title="Shipment" back backHref="/admin/shipments" />
-        <EmptyState icon={<CubeIcon size={30} color={C.red} />} title="Shipment not found" message={`No parcel with tracking ID ${id}.`} />
+        <EmptyState icon={<CubeIcon size={30} color={C.primary} />} title="Shipment not found" message={`No parcel with tracking ID ${id}.`} />
       </View>
     );
   }
@@ -69,7 +74,7 @@ export default function AdminShipmentDetail() {
   const share = () =>
     shareText(
       `Shipment ${s.id}`,
-      `Karnali Smart Group shipment ${s.id}\nStatus: ${STATUS_META[s.status].label}\nReceiver: ${s.receiver.name}, ${s.receiver.address}\nCOD: ${formatRs(s.cod)}\nUpdated: ${formatDateTime(s.updatedAt)}`,
+      `${appName} shipment ${s.id}\nStatus: ${STATUS_META[s.status].label}\nReceiver: ${s.receiver.name}, ${s.receiver.address}\nCOD: ${formatRs(s.cod)}\nUpdated: ${formatDateTime(s.updatedAt)}`,
     );
 
   return (
@@ -97,7 +102,7 @@ export default function AdminShipmentDetail() {
           <KeyValue label="Promised by" value={formatDateTime(s.promisedBy)} />
           <KeyValue label="Hub" value={hub?.name ?? s.hubId} />
           <KeyValue label="Attempts" value={`${s.attempts} of ${data.settings.maxAttempts}`} />
-          {s.failReason && <KeyValue label="Last issue" value={s.failReason} valueColor={C.red} />}
+          {s.failReason && <KeyValue label="Last issue" value={s.failReason} valueColor={C.danger} />}
         </Card>
 
         {/* People */}
@@ -109,9 +114,9 @@ export default function AdminShipmentDetail() {
             name={s.receiver.name}
             detail={`${s.receiver.phone} · ${s.receiver.address}`}
             actions={[
-              { label: 'Call receiver', icon: <PhoneOutlineIcon size={17} color={C.red} />, onPress: () => callPhone(s.receiver.phone) },
-              { label: 'Message receiver', icon: <MessageIcon size={17} color={C.red} />, onPress: () => sendSms(s.receiver.phone, `KSG: Update on parcel ${s.id}`) },
-              { label: 'Directions', icon: <NavigationIcon size={17} color={C.red} />, onPress: () => navigateTo(s.latitude, s.longitude) },
+              { label: 'Call receiver', icon: <PhoneOutlineIcon size={17} color={C.primary} />, onPress: () => callPhone(s.receiver.phone) },
+              { label: 'Message receiver', icon: <MessageIcon size={17} color={C.primary} />, onPress: () => sendSms(s.receiver.phone, `${shortName}: Update on parcel ${s.id}`) },
+              { label: 'Directions', icon: <NavigationIcon size={17} color={C.primary} />, onPress: () => navigateTo(s.latitude, s.longitude) },
             ]}
           />
           <View style={styles.divider} />
@@ -122,7 +127,7 @@ export default function AdminShipmentDetail() {
             name={merchant?.name ?? s.merchantId}
             detail={merchant ? `${merchant.owner} · ${merchant.phone}` : ''}
             onPress={merchant ? () => router.push({ pathname: '/admin/merchant/[id]', params: { id: merchant.id } }) : undefined}
-            actions={merchant ? [{ label: 'Call merchant', icon: <PhoneOutlineIcon size={17} color={C.red} />, onPress: () => callPhone(merchant.phone) }] : []}
+            actions={merchant ? [{ label: 'Call merchant', icon: <PhoneOutlineIcon size={17} color={C.primary} />, onPress: () => callPhone(merchant.phone) }] : []}
           />
           <View style={styles.divider} />
           {rider ? (
@@ -132,7 +137,7 @@ export default function AdminShipmentDetail() {
               name={rider.name}
               detail={`${DUTY_META[rider.duty].label} · ${rider.vehicle.plate}`}
               onPress={() => router.push({ pathname: '/admin/rider/[id]', params: { id: rider.id } })}
-              actions={[{ label: 'Call rider', icon: <PhoneOutlineIcon size={17} color={C.red} />, onPress: () => callPhone(rider.phone) }]}
+              actions={[{ label: 'Call rider', icon: <PhoneOutlineIcon size={17} color={C.primary} />, onPress: () => callPhone(rider.phone) }]}
             />
           ) : (
             <Party icon={<BikeIcon size={18} color={C.muted} />} tint="#F3F4F6" role="Rider" name={closed ? 'None' : 'Not assigned'} detail={closed ? '' : 'Assign a rider to move this parcel'} />
@@ -144,7 +149,7 @@ export default function AdminShipmentDetail() {
           <Text style={styles.cardTitle}>Package & charges</Text>
           <KeyValue label="Contents" value={s.item} />
           <KeyValue label="Weight" value={`${s.weightKg} kg${s.fragile ? ' · Fragile' : ''}`} />
-          <KeyValue label="Cash on delivery" value={s.cod ? formatRs(s.cod) : 'Prepaid'} valueColor={s.cod ? C.red : '#16A34A'} />
+          <KeyValue label="Cash on delivery" value={s.cod ? formatRs(s.cod) : 'Prepaid'} valueColor={s.cod ? C.primary : '#16A34A'} />
           <View style={styles.divider} />
           <KeyValue label="Base (first kg)" value={formatRs(breakdown.base)} />
           {breakdown.weightCharge > 0 && <KeyValue label="Extra weight" value={formatRs(breakdown.weightCharge)} />}
@@ -277,13 +282,15 @@ function Party({
   actions?: { label: string; icon: ReactNode; onPress: () => void }[];
   onPress?: () => void;
 }) {
+  const styles = useStyles();
+  const C = useColors();
   return (
     <View style={styles.party}>
       <Pressable disabled={!onPress} onPress={onPress} style={styles.partyMain} accessibilityRole={onPress ? 'button' : undefined}>
         <View style={[styles.partyIcon, tint ? { backgroundColor: tint } : null]}>{icon}</View>
         <View style={styles.flex}>
           <Text style={styles.partyRole}>{role}</Text>
-          <Text style={[styles.partyName, onPress && { color: C.red }]}>{name}</Text>
+          <Text style={[styles.partyName, onPress && { color: C.primary }]}>{name}</Text>
           {!!detail && <Text style={styles.partyDetail}>{detail}</Text>}
         </View>
       </Pressable>
@@ -298,7 +305,7 @@ function Party({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   content: { padding: 12, gap: 12, paddingBottom: 40 },
@@ -315,7 +322,7 @@ const styles = StyleSheet.create({
   partyName: { fontSize: 15, fontWeight: '700', color: C.textStrong, marginTop: 1 },
   partyDetail: { fontSize: 12, color: C.muted, marginTop: 2 },
   partyActions: { flexDirection: 'row', gap: 8 },
-  partyAction: { width: 38, height: 38, borderRadius: 19, backgroundColor: C.redTint, alignItems: 'center', justifyContent: 'center' },
+  partyAction: { width: 38, height: 38, borderRadius: 19, backgroundColor: C.primaryTint, alignItems: 'center', justifyContent: 'center' },
   pod: { borderColor: '#BBF7D0', backgroundColor: '#F7FEF9' },
   podHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   actions: { gap: 10 },
@@ -323,4 +330,4 @@ const styles = StyleSheet.create({
   statusOption: { paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10, borderWidth: 1, borderColor: '#E5E7EB' },
   statusOptionText: { fontSize: 13, color: C.text },
   cancelText: { fontSize: 14, color: C.text },
-});
+}));

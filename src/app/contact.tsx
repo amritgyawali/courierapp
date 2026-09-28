@@ -1,40 +1,42 @@
 import { StatusBar } from 'expo-status-bar';
-import { Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, Platform, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BranchMap } from '@/components/branch-map';
 import { EnvelopeIcon, LocationDotIcon, PaperPlaneIcon, PhoneIcon } from '@/components/icons';
+import { Text } from '@/components/text';
 import { ScreenHeader } from '@/components/ui';
-import { Colors, shadow } from '@/constants/theme';
-import { CONTACT } from '@/data/content';
-
-const HQ = {
-  latitude: CONTACT.latitude,
-  longitude: CONTACT.longitude,
-  title: 'Karnali Smart Group',
-  description: 'Tinkune, Kathmandu',
-};
+import { HQ_LOCATION } from '@/data/content';
+import { useBrand } from '@/state/branding-state';
+import { makeStyles, shadow, useColors } from '@/theme';
 
 function openDirections() {
-  const { latitude, longitude } = CONTACT;
+  const { latitude, longitude } = HQ_LOCATION;
   const url =
     Platform.OS === 'ios'
-      ? `http://maps.apple.com/?daddr=${latitude},${longitude}`
+      ? `https://maps.apple.com/?daddr=${latitude},${longitude}`
       : `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
-  Linking.openURL(url);
+  Linking.openURL(url).catch(() => {});
 }
 
+const open = (url: string) => Linking.openURL(url).catch(() => {});
+
 export default function ContactScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const insets = useSafeAreaInsets();
+  const { appName, support } = useBrand();
+  const hq = { ...HQ_LOCATION, title: appName, description: support.address };
+  const emails = [support.salesEmail, support.supportEmail].filter(Boolean);
   return (
     <View style={styles.screen}>
-      {/* Also opened from the vendor portal, whose crimson header uses light status-bar text. */}
+      {/* Also opened from the portals, whose brand-coloured headers use light status-bar text. */}
       <StatusBar style="dark" />
       <ScreenHeader title="Contact Us" back />
       <View style={styles.mapArea}>
         <BranchMap
-          points={[HQ]}
-          initialRegion={{ latitude: HQ.latitude - 0.004, longitude: HQ.longitude, latitudeDelta: 0.02, longitudeDelta: 0.02 }}
+          points={[hq]}
+          initialRegion={{ latitude: hq.latitude - 0.004, longitude: hq.longitude, latitudeDelta: 0.02, longitudeDelta: 0.02 }}
           showZoom={false}
         />
 
@@ -43,7 +45,7 @@ export default function ContactScreen() {
             accessibilityRole="button"
             accessibilityLabel="Get directions"
             onPress={openDirections}
-            style={({ pressed }) => [styles.navButton, pressed && { backgroundColor: Colors.redPressed }]}>
+            style={({ pressed }) => [styles.navButton, pressed && { backgroundColor: C.primaryPressed }]}>
             <PaperPlaneIcon />
           </Pressable>
 
@@ -51,32 +53,43 @@ export default function ContactScreen() {
           <Text style={styles.subheading}>Reach Us</Text>
 
           <View style={{ gap: 16 }}>
-            <View style={styles.row}>
-              <View style={styles.rowIcon}>
-                <LocationDotIcon />
+            {!!support.address && (
+              <View style={styles.row}>
+                <View style={styles.rowIcon}>
+                  <LocationDotIcon />
+                </View>
+                <Text style={styles.rowText}>{support.address}</Text>
               </View>
-              <Text style={styles.rowText}>{CONTACT.address}</Text>
-            </View>
-            <View style={styles.row}>
-              <View style={styles.rowIcon}>
-                <EnvelopeIcon size={16} color={Colors.red} />
-              </View>
-              <Text style={styles.rowText}>
-                <Text style={styles.link} onPress={() => Linking.openURL(`mailto:${CONTACT.emails[0]}`)}>
-                  {CONTACT.emails[0]}
+            )}
+            {emails.length > 0 && (
+              <View style={styles.row}>
+                <View style={styles.rowIcon}>
+                  <EnvelopeIcon size={16} color={C.primary} />
+                </View>
+                <Text style={styles.rowText}>
+                  {emails.map((email, i) => (
+                    <Text key={email}>
+                      {i > 0 && ' or\n'}
+                      <Text style={styles.link} onPress={() => open(`mailto:${email}`)}>
+                        {email}
+                      </Text>
+                    </Text>
+                  ))}
                 </Text>
-                {' or\n'}
-                <Text style={styles.link} onPress={() => Linking.openURL(`mailto:${CONTACT.emails[1]}`)}>
-                  {CONTACT.emails[1]}
-                </Text>
-              </Text>
-            </View>
-            <Pressable style={[styles.row, { alignItems: 'center' }]} onPress={() => Linking.openURL(CONTACT.phoneHref)}>
-              <View style={[styles.rowIcon, { marginTop: 0 }]}>
-                <PhoneIcon />
               </View>
-              <Text style={[styles.rowText, styles.phone]}>{CONTACT.phone}</Text>
-            </Pressable>
+            )}
+            {!!support.phone && (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Call ${support.phone}`}
+                style={[styles.row, { alignItems: 'center' }]}
+                onPress={() => open(`tel:${support.phone.replace(/[^+\d]/g, '')}`)}>
+                <View style={[styles.rowIcon, { marginTop: 0 }]}>
+                  <PhoneIcon />
+                </View>
+                <Text style={[styles.rowText, styles.phone]}>{support.phone}</Text>
+              </Pressable>
+            )}
           </View>
         </View>
       </View>
@@ -84,7 +97,7 @@ export default function ContactScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   screen: { flex: 1, backgroundColor: '#FFFFFF' },
   mapArea: { flex: 1, backgroundColor: '#E8ECEF' },
   card: {
@@ -105,17 +118,17 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.red,
+    backgroundColor: C.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: shadow(6, 20, 0.3, Colors.red),
+    boxShadow: shadow(6, 20, 0.3, C.primary),
     zIndex: 2,
   },
-  heading: { fontSize: 20, fontWeight: '700', color: Colors.black, marginBottom: 16, letterSpacing: -0.3 },
-  subheading: { fontSize: 16, fontWeight: '700', color: Colors.black, marginBottom: 14 },
+  heading: { fontSize: 20, fontWeight: '700', color: C.textStrong, marginBottom: 16, letterSpacing: -0.3 },
+  subheading: { fontSize: 16, fontWeight: '700', color: C.textStrong, marginBottom: 14 },
   row: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   rowIcon: { width: 18, alignItems: 'center', marginTop: 1 },
   rowText: { flex: 1, fontSize: 13, lineHeight: 18, color: '#1F2937' },
   link: { color: '#1F2937' },
   phone: { fontWeight: '500', letterSpacing: 0.5 },
-});
+}));

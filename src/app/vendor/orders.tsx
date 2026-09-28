@@ -1,8 +1,7 @@
 import { useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useState } from 'react';
-import { FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, ScrollView, View } from 'react-native';
 
-import { SelectSheet } from '@/components/ui';
 import {
   AlertCircleIcon,
   BagIcon,
@@ -31,15 +30,18 @@ import {
   PortalFab,
   PortalHeader,
 } from '@/components/portal/ui';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
+import { SelectSheet } from '@/components/ui';
 import { ORDER_STAGES, ORDER_STATUS_LABELS, type OrderStage, type OrderStatus, type VendorOrder } from '@/data/vendor';
 import { useVendorState } from '@/state/vendor-state';
+import { makeStyles, useColors } from '@/theme';
 import { formatDateTime, formatRs } from '@/utils/format';
+import { oneOf } from '@/utils/params';
 
 const STATUS_BADGE: Record<OrderStatus, { bg: string; color: string }> = {
   delivered: { bg: '#EAF8F0', color: '#23A26D' },
   'in-transit': { bg: '#E9F2FE', color: '#2B6CB0' },
-  returned: { bg: '#FDECEF', color: C.red },
+  returned: { bg: '#FDECEF', color: '#C0143C' },
   'return-pending': { bg: '#FEF3C7', color: '#D97706' },
 };
 
@@ -63,17 +65,20 @@ const NEW_ORDER_INFO = {
   body: 'Booking new orders from the app is coming soon.',
 };
 
-const labelToStatus = (label: string) =>
-  (Object.keys(ORDER_STATUS_LABELS) as OrderStatus[]).find((s) => ORDER_STATUS_LABELS[s] === label);
+const ORDER_STATUSES = Object.keys(ORDER_STATUS_LABELS) as OrderStatus[];
+
+const labelToStatus = (label: string) => ORDER_STATUSES.find((s) => ORDER_STATUS_LABELS[s] === label);
 
 export default function OrdersScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const params = useLocalSearchParams<{ q?: string; status?: string }>();
   const { orders } = useVendorState();
 
   const [stage, setStage] = useState<OrderStage>('orders');
   const [searching, setSearching] = useState(Boolean(params.q));
   const [query, setQuery] = useState(params.q ?? '');
-  const [status, setStatus] = useState<OrderStatus | null>((params.status as OrderStatus) ?? null);
+  const [status, setStatus] = useState<OrderStatus | null>(oneOf(params.status, ORDER_STATUSES, null));
   const [statusSheet, setStatusSheet] = useState(false);
   const [newOrderInfo, setNewOrderInfo] = useState(false);
 
@@ -84,7 +89,7 @@ export default function OrdersScreen() {
     setStage('orders');
     setQuery(params.q ?? '');
     setSearching(Boolean(params.q));
-    setStatus((params.status as OrderStatus) ?? null);
+    setStatus(oneOf(params.status, ORDER_STATUSES, null));
   }
 
   const q = query.trim().toLowerCase();
@@ -111,7 +116,7 @@ export default function OrdersScreen() {
 
       <View style={styles.toolbar}>
         <SearchCountBar
-          icon={<CalendarOutlineIcon size={18} color={C.red} />}
+          icon={<CalendarOutlineIcon size={18} color={C.primary} />}
           label={`${visible.length} ${visible.length === 1 ? 'Order' : 'Orders'}`}
           searching={searching}
           onToggleSearch={() => {
@@ -123,7 +128,7 @@ export default function OrdersScreen() {
           placeholder="Order no., receiver, phone…"
         />
         <ToolButton label="Filter by status" active={status !== null} onPress={() => setStatusSheet(true)}>
-          <SlidersIcon size={20} color={status ? C.red : '#4B5563'} />
+          <SlidersIcon size={20} color={status ? C.primary : '#4B5563'} />
         </ToolButton>
       </View>
 
@@ -134,7 +139,7 @@ export default function OrdersScreen() {
         renderItem={({ item }) => <OrderCard order={item} />}
         ListEmptyComponent={
           <EmptyState
-            icon={<BoxIcon size={32} color={C.red} />}
+            icon={<BoxIcon size={32} color={C.primary} />}
             title={q || status ? 'No matching orders' : `No ${stageLabel.toLowerCase()} yet`}
             message={
               q || status
@@ -154,7 +159,7 @@ export default function OrdersScreen() {
         selected={status ? ORDER_STATUS_LABELS[status] : ALL_STATUSES}
         onSelect={(label) => setStatus(labelToStatus(label) ?? null)}
         onClose={() => setStatusSheet(false)}
-        accent={C.red}
+        accent={C.primary}
       />
       <InfoSheet visible={newOrderInfo} content={NEW_ORDER_INFO} onClose={() => setNewOrderInfo(false)} />
     </View>
@@ -162,12 +167,14 @@ export default function OrdersScreen() {
 }
 
 function OrderCard({ order }: { order: VendorOrder }) {
+  const styles = useStyles();
+  const C = useColors();
   const badge = STATUS_BADGE[order.status];
   return (
     <Card style={styles.card}>
       <View style={styles.cardHeader}>
         <View style={styles.cardId}>
-          <IconTile bg={C.red} size={34}>
+          <IconTile bg={C.primary} size={34}>
             <BoxIcon size={20} color="#FFFFFF" />
           </IconTile>
           <Text style={styles.orderId}>#{order.id}</Text>
@@ -188,7 +195,7 @@ function OrderCard({ order }: { order: VendorOrder }) {
           icon={<Text style={styles.rupee}>₹</Text>}
           label="Total Amount"
           value={formatRs(order.amount, 2)}
-          valueColor={C.red}
+          valueColor={C.primary}
         />
         <DetailRow icon={<PhoneOutlineIcon size={17} color={C.faint} />} label="Phone" value={order.phone} />
       </View>
@@ -205,7 +212,7 @@ function OrderCard({ order }: { order: VendorOrder }) {
             <ClockIcon size={15} color={C.faint} />
             <Text style={styles.date}>{formatDateTime(order.createdAt)}</Text>
           </View>
-          <ChevronRightIcon size={16} color={C.red} />
+          <ChevronRightIcon size={16} color={C.primary} />
         </View>
       </View>
     </Card>
@@ -223,6 +230,7 @@ function DetailRow({
   value: string;
   valueColor?: string;
 }) {
+  const styles = useStyles();
   return (
     <View style={styles.detailRow}>
       <View style={styles.detailLeft}>
@@ -236,7 +244,7 @@ function DetailRow({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   screen: { flex: 1, backgroundColor: C.screenBg },
   chipsBar: { backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#F1F2F4' },
   chips: { paddingHorizontal: 12, paddingVertical: 10, gap: 10 },
@@ -270,4 +278,4 @@ const styles = StyleSheet.create({
   footerBetween: { justifyContent: 'space-between' },
   address: { fontSize: 13, color: '#4B5563', flexShrink: 1 },
   date: { fontSize: 12, color: C.muted },
-});
+}));

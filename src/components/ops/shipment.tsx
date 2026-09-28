@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import {
   AlertTriangleIcon,
@@ -10,8 +10,9 @@ import {
   WineGlassIcon,
 } from '@/components/portal/icons';
 import { Badge, Card } from '@/components/portal/ui';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { isOverdue, type Shipment, type ShipmentEvent, type ShipmentStatus, STATUS_META } from '@/data/ops';
+import { makeStyles, useColors } from '@/theme';
 import { formatDateTime, formatRs, timeAgo } from '@/utils/format';
 
 export function StatusBadge({ status }: { status: ShipmentStatus }) {
@@ -39,6 +40,8 @@ export function ShipmentCard({
   footer?: ReactNode;
   now?: Date;
 }) {
+  const styles = useStyles();
+  const C = useColors();
   const overdue = isOverdue(s, now);
   return (
     <Card style={[styles.card, selected && styles.cardSelected]}>
@@ -52,7 +55,7 @@ export function ShipmentCard({
           <View style={styles.idRow}>
             {onToggleSelect && (
               <Pressable role="checkbox" aria-checked={!!selected} aria-label={`Select ${s.id}`} hitSlop={10} onPress={onToggleSelect}>
-                <CheckSquareIcon checked={!!selected} size={22} color={selected ? C.red : '#9CA3AF'} />
+                <CheckSquareIcon checked={!!selected} size={22} color={selected ? C.primary : '#9CA3AF'} />
               </Pressable>
             )}
             <Text style={styles.id}>{s.id}</Text>
@@ -100,7 +103,7 @@ export function ShipmentCard({
                 <Text style={styles.small}>{timeAgo(s.updatedAt, now)}</Text>
               </>
             )}
-            {onPress && <ChevronRightIcon size={14} color={C.red} />}
+            {onPress && <ChevronRightIcon size={14} color={C.primary} />}
           </View>
         </View>
       </Pressable>
@@ -111,6 +114,7 @@ export function ShipmentCard({
 
 /** Vertical tracking timeline, newest event first. */
 export function Timeline({ events }: { events: ShipmentEvent[] }) {
+  const styles = useStyles();
   const list = [...events].reverse();
   return (
     <View>
@@ -137,10 +141,10 @@ export function Timeline({ events }: { events: ShipmentEvent[] }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   card: { overflow: 'hidden' },
-  cardSelected: { borderColor: C.red, borderWidth: 1.5 },
+  cardSelected: { borderColor: C.primary, borderWidth: 1.5 },
   body: { padding: 14, gap: 10 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   idRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 },
@@ -151,7 +155,7 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 3 },
   meta: { fontSize: 12, color: C.muted, flexShrink: 1 },
   amounts: { alignItems: 'flex-end' },
-  cod: { fontSize: 15, fontWeight: '800', color: C.red },
+  cod: { fontSize: 15, fontWeight: '800', color: C.primary },
   codZero: { color: '#16A34A', fontSize: 13 },
   charge: { fontSize: 11, color: C.muted, marginTop: 2 },
   footerRow: {
@@ -174,4 +178,4 @@ const styles = StyleSheet.create({
   tlTitle: { fontSize: 14, fontWeight: '700', color: C.text },
   tlNote: { fontSize: 13, color: '#4B5563', marginTop: 1 },
   tlMeta: { fontSize: 11, color: C.faint, marginTop: 3 },
-});
+}));

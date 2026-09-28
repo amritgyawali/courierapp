@@ -1,17 +1,19 @@
 import { type ComponentType, type ReactNode, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrandLogoLarge } from '@/components/brand';
 import { MotorbikeIcon, ShieldIcon, StorefrontIcon, UserIcon } from '@/components/icons';
-import { Colors, shadow } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { USER_ROLE_LABELS, USER_ROLES, type UserRole } from '@/constants/user-roles';
+import { makeStyles, shadow, useColors } from '@/theme';
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Shared layout for the Login and Register screens. */
 export function AuthLayout({ title, bold, children }: { title: string; bold?: boolean; children: ReactNode }) {
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   return (
     <KeyboardAvoidingView
@@ -19,7 +21,7 @@ export function AuthLayout({ title, bold, children }: { title: string; bold?: bo
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView
         style={styles.flex}
-        contentContainerStyle={[styles.container, { paddingTop: insets.top + 96, paddingBottom: insets.bottom + 32 }]}
+        contentContainerStyle={[styles.container, { paddingTop: insets.top + 72, paddingBottom: insets.bottom + 32 }]}
         keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <BrandLogoLarge />
@@ -32,6 +34,7 @@ export function AuthLayout({ title, bold, children }: { title: string; bold?: bo
 }
 
 export function OrDivider() {
+  const styles = useStyles();
   return (
     <View style={styles.dividerRow}>
       <View style={styles.dividerLine} />
@@ -50,8 +53,10 @@ const ROLE_ICONS: Record<UserRole, ComponentType<{ size?: number; color?: string
 
 const TRACK_PADDING = 4;
 
-/** Segmented control for picking the account type, with a sliding red indicator. */
+/** Segmented control for picking the account type, with a sliding brand-coloured indicator. */
 export function RoleSelector({ value, onChange }: { value: UserRole; onChange: (role: UserRole) => void }) {
+  const styles = useStyles();
+  const C = useColors();
   const [trackWidth, setTrackWidth] = useState(0);
   const segmentWidth = (trackWidth - TRACK_PADDING * 2) / USER_ROLES.length;
   const offset = USER_ROLES.indexOf(value) * segmentWidth;
@@ -71,7 +76,7 @@ export function RoleSelector({ value, onChange }: { value: UserRole; onChange: (
         {trackWidth > 0 && <Animated.View style={[styles.roleIndicator, { width: segmentWidth }, indicatorStyle]} />}
         {USER_ROLES.map((role) => {
           const selected = role === value;
-          const color = selected ? Colors.white : Colors.text;
+          const color = selected ? C.onPrimary : C.text;
           const Icon = ROLE_ICONS[role];
           return (
             <Pressable
@@ -94,15 +99,16 @@ export function RoleSelector({ value, onChange }: { value: UserRole; onChange: (
 }
 
 export function FormError({ message }: { message: string }) {
+  const styles = useStyles();
   if (!message) return null;
   return <Text style={styles.error}>{message}</Text>;
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#FFFFFF' },
+const useStyles = makeStyles(({ colors: C }) => ({
+  flex: { flex: 1, backgroundColor: C.card },
   container: { flexGrow: 1, paddingHorizontal: 28, width: '100%', maxWidth: 420, alignSelf: 'center' },
   header: { alignItems: 'center', marginBottom: 32 },
-  title: { marginTop: 26, fontSize: 30, color: Colors.black, letterSpacing: -0.5 },
+  title: { marginTop: 22, fontSize: 30, color: C.textStrong, letterSpacing: -0.6 },
   dividerRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 24 },
   dividerLine: { flex: 1, height: 1, backgroundColor: '#D1D5DB' },
   dividerText: {
@@ -112,11 +118,11 @@ const styles = StyleSheet.create({
     color: '#374151',
     letterSpacing: 1,
   },
-  error: { color: Colors.red, fontSize: 13, marginTop: -4 },
-  roleHeading: { fontSize: 13, fontWeight: '600', color: Colors.textMuted, marginBottom: 8, marginLeft: 2 },
+  error: { color: C.danger, fontSize: 13, marginTop: -4 },
+  roleHeading: { fontSize: 13, fontWeight: '600', color: C.muted, marginBottom: 8, marginLeft: 2 },
   roleTrack: {
     flexDirection: 'row',
-    backgroundColor: Colors.inputBg,
+    backgroundColor: C.inputBg,
     borderRadius: 12,
     padding: TRACK_PADDING,
   },
@@ -126,8 +132,8 @@ const styles = StyleSheet.create({
     bottom: TRACK_PADDING,
     left: TRACK_PADDING,
     borderRadius: 9,
-    backgroundColor: Colors.red,
-    boxShadow: shadow(2, 8, 0.3, Colors.red),
+    backgroundColor: C.primary,
+    boxShadow: shadow(2, 8, 0.3, C.primary),
   },
   roleOption: {
     flex: 1,
@@ -138,4 +144,4 @@ const styles = StyleSheet.create({
   },
   roleText: { fontSize: 12, fontWeight: '500' },
   roleTextSelected: { fontWeight: '700' },
-});
+}));

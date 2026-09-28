@@ -1,12 +1,14 @@
 import { router } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { EmptyBoxIllustration } from '@/components/brand';
+import { Text } from '@/components/text';
 import { Fab, ScreenHeader } from '@/components/ui';
-import { Colors, cardShadow } from '@/constants/theme';
 import { hasDetails, useAppState } from '@/state/app-state';
+import { cardShadow, makeStyles } from '@/theme';
 
 function Row({ label, value }: { label: string; value: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.row}>
       <Text style={styles.rowLabel}>{label}</Text>
@@ -16,6 +18,7 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 export default function AccountDetailsScreen() {
+  const styles = useStyles();
   const { details } = useAppState();
   const filled = hasDetails(details);
 
@@ -50,21 +53,21 @@ export default function AccountDetailsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Colors.screenBgAlt },
+const useStyles = makeStyles(({ colors: C }) => ({
+  screen: { flex: 1, backgroundColor: C.screenBg },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, marginTop: -64 },
   emptyText: { marginTop: 32, fontSize: 17, color: '#1F2937', textAlign: 'center', lineHeight: 26 },
   content: { padding: 16, paddingBottom: 120 },
-  section: { fontSize: 15, color: Colors.textMuted, marginTop: 8, marginBottom: 8, marginLeft: 4 },
+  section: { fontSize: 15, color: C.muted, marginTop: 8, marginBottom: 8, marginLeft: 4 },
   card: { backgroundColor: '#FFFFFF', borderRadius: 12, paddingHorizontal: 16, marginBottom: 12, ...cardShadow },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.border,
+    borderBottomColor: C.border,
     gap: 12,
   },
-  rowLabel: { fontSize: 15, color: Colors.textMuted },
-  rowValue: { fontSize: 15, color: Colors.black, fontWeight: '600', flexShrink: 1, textAlign: 'right' },
-});
+  rowLabel: { fontSize: 15, color: C.muted },
+  rowValue: { fontSize: 15, color: C.textStrong, fontWeight: '600', flexShrink: 1, textAlign: 'right' },
+}));

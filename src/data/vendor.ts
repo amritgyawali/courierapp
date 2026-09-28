@@ -5,6 +5,7 @@
  * as designed. Replace the `SAMPLE_*` exports with the KSG vendor API; every total on the
  * Dashboard, Accounts and Reports screens is derived from these records by the helpers below.
  */
+import { DEMO_PERSON_NAME, DEMO_VENDOR_BUSINESS_NAME } from '@/constants/identity';
 import { daysInclusive, isSameDay, startOfDay } from '@/utils/format';
 
 // ---------------------------------------------------------------------------
@@ -53,6 +54,8 @@ export type VendorComment = {
 
 export type VendorProfile = {
   businessName: string;
+  ownerName: string;
+  /** Six-digit ID, generated randomly per install until the vendor API issues one. */
   vendorId: string;
   phone: string;
   address: string;
@@ -80,9 +83,10 @@ export const ORDER_STAGES: { key: OrderStage; label: string }[] = [
 // Sample records (from the designs)
 // ---------------------------------------------------------------------------
 
-export const SAMPLE_PROFILE: VendorProfile = {
-  businessName: 'Trending Shop Nepal',
-  vendorId: '16500',
+/** Profile defaults; the vendor state fills in a random `vendorId` on first launch. */
+export const SAMPLE_PROFILE: Omit<VendorProfile, 'vendorId'> = {
+  businessName: DEMO_VENDOR_BUSINESS_NAME,
+  ownerName: DEMO_PERSON_NAME,
   phone: '9867335830',
   address: 'Kathmandu, Nepal',
 };

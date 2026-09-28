@@ -1,13 +1,16 @@
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { FlatList, Pressable, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text } from '@/components/text';
 import { Button, ScreenHeader } from '@/components/ui';
-import { Colors } from '@/constants/theme';
 import { SERVICES } from '@/data/content';
+import { makeStyles, useColors } from '@/theme';
 
 export default function ServicesScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const listRef = useRef<FlatList>(null);
@@ -52,7 +55,7 @@ export default function ServicesScreen() {
             accessibilityLabel={`Show ${s.title}`}
             hitSlop={6}
             onPress={() => listRef.current?.scrollToIndex({ index: i, animated: true })}
-            style={[styles.dot, { backgroundColor: i === page ? Colors.red : Colors.redDotInactive }]}
+            style={[styles.dot, { backgroundColor: i === page ? C.primary : C.primaryMuted }]}
           />
         ))}
       </View>
@@ -60,8 +63,8 @@ export default function ServicesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#F2F2F4' },
+const useStyles = makeStyles(({ colors: C }) => ({
+  screen: { flex: 1, backgroundColor: C.screenBg },
   cta: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
@@ -70,12 +73,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 14,
   },
-  ctaText: { fontSize: 15, fontWeight: '600', color: Colors.black },
+  ctaText: { fontSize: 15, fontWeight: '600', color: C.textStrong },
   ctaButton: { paddingVertical: 9, paddingHorizontal: 16 },
   slide: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, paddingBottom: 32 },
-  title: { color: Colors.red, fontWeight: '700', fontSize: 25, marginBottom: 12, letterSpacing: -0.4 },
+  title: { color: C.primary, fontWeight: '700', fontSize: 25, marginBottom: 12, letterSpacing: -0.4 },
   body: {
-    color: Colors.black,
+    color: C.textStrong,
     fontSize: 18,
     lineHeight: 25,
     fontWeight: '700',
@@ -84,4 +87,4 @@ const styles = StyleSheet.create({
   },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 10 },
   dot: { width: 12, height: 12, borderRadius: 6 },
-});
+}));

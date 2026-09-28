@@ -1,24 +1,61 @@
+import { router } from 'expo-router';
 import { type ReactNode, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { useAdmin } from '@/components/admin/use-admin';
 import { appVersionLabel } from '@/components/portal/drawer';
-import { RefreshIcon, SettingsIcon } from '@/components/portal/icons';
+import { PaletteIcon, PencilIcon, RefreshIcon, SettingsIcon } from '@/components/portal/icons';
 import { Card, PortalHeader, SectionHeading } from '@/components/portal/ui';
-import { Avatar, Button, KeyValue, Sheet, TextField, Toggle, useToast } from '@/components/portal/widgets';
-import { PortalColors as C } from '@/constants/theme';
+import { Avatar, Button, KeyValue, ListRow, Sheet, TextField, Toggle, useToast } from '@/components/portal/widgets';
+import { Text } from '@/components/text';
 import { type OpsSettings, ROLE_META } from '@/data/ops';
+import { makeStyles, useColors } from '@/theme';
 
 const INFO = {
   title: 'Settings',
-  body: 'Operational rules for the whole network: automatic rider assignment, delivery OTP, how much cash a rider may carry and how many delivery attempts are allowed before a parcel is returned.',
+  body: 'Your admin profile, the app’s branding, and operational rules for the whole network: automatic rider assignment, delivery OTP, how much cash a rider may carry and how many delivery attempts are allowed before a parcel is returned.',
 };
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function SettingsScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const { data, dispatch, actor, me, reset } = useAdmin();
   const toast = useToast();
   const [s, setS] = useState<OpsSettings>(data.settings);
   const [resetOpen, setResetOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [name, setName] = useState(me.name);
+  const [email, setEmail] = useState(me.email);
+  const [profileError, setProfileError] = useState('');
+
+  // Saved settings changed underneath (e.g. demo data reset): drop the stale draft.
+  const [seenSettings, setSeenSettings] = useState(data.settings);
+  if (data.settings !== seenSettings) {
+    setSeenSettings(data.settings);
+    setS(data.settings);
+  }
+
+  const openProfile = () => {
+    setName(me.name);
+    setEmail(me.email);
+    setProfileError('');
+    setProfileOpen(true);
+  };
+
+  const saveProfile = () => {
+    const nextName = name.trim().replace(/\s+/g, ' ');
+    const nextEmail = email.trim().toLowerCase();
+    if (nextName.length < 2) return setProfileError('Enter your full name.');
+    if (!EMAIL_RE.test(nextEmail)) return setProfileError('Enter a valid email address.');
+    if (data.staff.some((st) => st.id !== me.id && st.email.toLowerCase() === nextEmail)) {
+      return setProfileError('Another staff member already uses this email.');
+    }
+    dispatch({ type: 'updateStaff', id: me.id, changes: { name: nextName, email: nextEmail }, actor });
+    setProfileOpen(false);
+    toast('Profile updated');
+  };
   const dirty = JSON.stringify(s) !== JSON.stringify(data.settings);
   const set = <K extends keyof OpsSettings>(k: K, v: OpsSettings[K]) => setS((prev) => ({ ...prev, [k]: v }));
   const num = (v: string) => Number(v.replace(/[^0-9]/g, '')) || 0;
@@ -35,9 +72,19 @@ export default function SettingsScreen() {
               {ROLE_META[me.role].label} · {me.email}
             </Text>
           </View>
+          <Button compact variant="soft" title="Edit" icon={(c) => <PencilIcon size={14} color={c} />} onPress={openProfile} />
         </Card>
 
-        <SectionHeading icon={<SettingsIcon size={20} color={C.red} />} title="Dispatch & delivery" />
+        <Card>
+          <ListRow
+            icon={<PaletteIcon size={22} color={C.primary} />}
+            title="Branding & Appearance"
+            subtitle="App name, logo, app icon, theme colour, font and contact details"
+            onPress={() => router.navigate('/admin/branding')}
+          />
+        </Card>
+
+        <SectionHeading icon={<SettingsIcon size={20} color={C.primary} />} title="Dispatch & delivery" />
         <Card style={styles.card}>
           <Row title="Auto-assign suggestions" subtitle="Rank riders by hub, duty and workload when assigning.">
             <Toggle value={s.autoAssign} onChange={(v) => set('autoAssign', v)} label="Auto-assign suggestions" />
@@ -67,7 +114,7 @@ export default function SettingsScreen() {
           }}
         />
 
-        <SectionHeading icon={<RefreshIcon size={20} color={C.red} />} title="Data" />
+        <SectionHeading icon={<RefreshIcon size={20} color={C.primary} />} title="Data" />
         <Card style={styles.card}>
           <KeyValue label="Shipments" value={String(data.shipments.length)} />
           <KeyValue label="Riders / Merchants / Hubs" value={`${data.riders.length} / ${data.merchants.length} / ${data.hubs.length}`} />
@@ -97,11 +144,29 @@ export default function SettingsScreen() {
         }>
         <Text style={styles.meta}>Use this before a demo or after testing. It cannot be undone.</Text>
       </Sheet>
+
+      <Sheet
+        visible={profileOpen}
+        title="Edit your profile"
+        subtitle="Shown in the menu, on the dashboard greeting and in the audit log."
+        onClose={() => setProfileOpen(false)}
+        footer={<Button title="Save profile" onPress={saveProfile} />}>
+        <TextField label="Full name" value={name} onChangeText={setName} autoCapitalize="words" maxLength={60} />
+        <TextField
+          label="Work email"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          error={profileError}
+        />
+      </Sheet>
     </View>
   );
 }
 
 function Row({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
+  const styles = useStyles();
   return (
     <View style={styles.row}>
       <View style={styles.flex}>
@@ -113,7 +178,7 @@ function Row({ title, subtitle, children }: { title: string; subtitle: string; c
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   content: { padding: 12, gap: 12, paddingBottom: 40 },
@@ -126,4 +191,4 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: C.divider },
   fields: { flexDirection: 'row', gap: 10 },
   top: { marginTop: 8 },
-});
+}));

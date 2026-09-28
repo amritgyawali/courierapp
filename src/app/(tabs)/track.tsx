@@ -1,17 +1,19 @@
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, View } from 'react-native';
 
 import { AddTrackingModal } from '@/components/add-tracking-modal';
 import { EmptyBoxIllustration } from '@/components/brand';
 import { TicketIcon, TrashIcon } from '@/components/icons';
+import { Text } from '@/components/text';
 import { Fab, ScreenHeader } from '@/components/ui';
-import { Colors, cardShadow } from '@/constants/theme';
 import { STATUS_META } from '@/data/ops';
 import { useAppState } from '@/state/app-state';
 import { useOps } from '@/state/ops-state';
+import { cardShadow, makeStyles } from '@/theme';
 import { timeAgo } from '@/utils/format';
 
 export default function TrackScreen() {
+  const styles = useStyles();
   const { trackings, addTracking, removeTracking } = useAppState();
   const { data } = useOps();
   const shipments = new Map(data.shipments.map((s) => [s.id, s]));
@@ -71,8 +73,8 @@ export default function TrackScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Colors.screenBg },
+const useStyles = makeStyles(({ colors: C }) => ({
+  screen: { flex: 1, backgroundColor: C.screenBg },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, marginTop: -32 },
   emptyText: { marginTop: 28, fontSize: 17, color: '#212529', textAlign: 'center', letterSpacing: -0.2 },
   list: { padding: 16, gap: 12, paddingBottom: 100 },
@@ -90,10 +92,10 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#FDECEE',
+    backgroundColor: C.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardNumber: { fontSize: 16, fontWeight: '700', color: Colors.black, letterSpacing: 0.3 },
-  cardMeta: { fontSize: 13, color: Colors.textMuted, marginTop: 2 },
-});
+  cardNumber: { fontSize: 16, fontWeight: '700', color: C.textStrong, letterSpacing: 0.3 },
+  cardMeta: { fontSize: 13, color: C.muted, marginTop: 2 },
+}));

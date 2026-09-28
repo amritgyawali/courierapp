@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { useAdmin } from '@/components/admin/use-admin';
 import { MegaphoneOutlineIcon } from '@/components/portal/icons';
 import { Badge, Card, Chip, PortalHeader, SectionHeading } from '@/components/portal/ui';
 import { Button, TextField, useNow, useToast } from '@/components/portal/widgets';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import type { Audience } from '@/data/ops';
+import { makeStyles, useColors } from '@/theme';
 import { timeAgo } from '@/utils/format';
 
 const AUDIENCE: Record<Audience, { label: string; bg: string; color: string }> = {
@@ -21,6 +22,8 @@ const INFO = {
 };
 
 export default function AnnouncementsScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const { data, dispatch, actor } = useAdmin();
   const toast = useToast();
   const now = useNow();
@@ -64,7 +67,7 @@ export default function AnnouncementsScreen() {
           <Button title="Publish" icon={(c) => <MegaphoneOutlineIcon size={18} color={c} />} onPress={publish} />
         </Card>
 
-        <SectionHeading icon={<MegaphoneOutlineIcon size={20} color={C.red} />} title="Sent" />
+        <SectionHeading icon={<MegaphoneOutlineIcon size={20} color={C.primary} />} title="Sent" />
         {data.announcements.map((a) => (
           <Card key={a.id} style={styles.card}>
             <View style={styles.head}>
@@ -82,7 +85,7 @@ export default function AnnouncementsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   screen: { flex: 1, backgroundColor: C.screenBg },
   content: { padding: 12, gap: 12, paddingBottom: 40 },
   card: { padding: 14, gap: 10 },
@@ -92,4 +95,4 @@ const styles = StyleSheet.create({
   meta: { fontSize: 12, color: C.muted },
   title: { fontSize: 15, fontWeight: '700', color: C.textStrong },
   body: { fontSize: 13, color: '#4B5563', lineHeight: 19 },
-});
+}));
