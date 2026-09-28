@@ -10,6 +10,13 @@ npx expo start        # scan the QR code with Expo Go (Android / iOS)
 npx expo start --web  # browser preview (maps fall back to an OpenStreetMap embed)
 ```
 
+If Expo Go does not load the app:
+
+- **`Cannot find native module 'ExpoAsset'`** (often with `No native ExponentConstants module found`) on first open: stop the dev server, run `npx expo start --clear`, then reload the app. Metro's module map goes stale when `node_modules` changes while it is running ([expo/expo#48950](https://github.com/expo/expo/issues/48950)); nothing is actually missing.
+- **"Project is incompatible with this version of Expo Go"**: update Expo Go. This project needs the Expo Go build for SDK 57.
+- **Phone cannot connect** (public or hostel Wi-Fi often blocks devices from reaching each other): use `npx expo start --tunnel`.
+- **Metro crashes with `out of memory` or logs `Cache write failed`**: free space on the system drive, or point the cache at another drive, e.g. in PowerShell `$env:TEMP="D:\dev-temp"; $env:TMP="D:\dev-temp"; npx expo start --max-workers 2`.
+
 ## Screen flow
 
 | # | Design | Route |

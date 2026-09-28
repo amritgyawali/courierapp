@@ -21,7 +21,7 @@ This is the Karnali Smart Group courier mobile app, built with React Native and 
 | Dependency install | Done |
 | Extra native packages (maps, svg, storage, date picker, image picker/manipulator, Google Fonts) | Done |
 | Typecheck / lint / expo-doctor / bundle build | Done — all pass |
-| Run on phone | **Not done** |
+| Run on phone | Started — loads in Expo Go on iPhone and Android; screen-by-screen device test not done |
 | Backend / API connection | **Not started** |
 | App icon, splash screen | Done — teal brand mark (replace with final artwork if needed) |
 | Store build | **Not started** |
@@ -57,6 +57,8 @@ This is the Karnali Smart Group courier mobile app, built with React Native and 
 - Admin Settings no longer shows stale values after "Reset demo data".
 - Error text, failed attempts and log out use red instead of the brand colour.
 - Every external link (phone, email, maps, social) handles failures instead of throwing.
+- About Us no longer calls `UIManager.setLayoutAnimationEnabledExperimental`, which does nothing on the New Architecture and logged a warning on every Android launch.
+- README lists fixes for the Expo Go start-up errors seen on a phone (`Cannot find native module 'ExpoAsset'`, SDK mismatch, Wi-Fi blocking, Metro out of memory).
 
 **Checks run:** typecheck, lint, `expo-doctor` (21/21), Android and web bundles, and a headless browser pass over 50 screens (no console errors) plus an end-to-end test of the branding, admin profile and vendor profile flows.
 

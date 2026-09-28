@@ -1,13 +1,5 @@
 import { type ReactNode, useState } from 'react';
-import {
-  LayoutAnimation,
-  Linking,
-  Platform,
-  Pressable,
-  ScrollView,
-  UIManager,
-  View,
-} from 'react-native';
+import { LayoutAnimation, Linking, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -24,8 +16,6 @@ import { ScreenHeader } from '@/components/ui';
 import { ABOUT_SECTIONS } from '@/data/content';
 import { brandText, useBrand } from '@/state/branding-state';
 import { makeStyles, shadow } from '@/theme';
-
-if (Platform.OS === 'android') UIManager.setLayoutAnimationEnabledExperimental?.(true);
 
 export default function AboutScreen() {
   const styles = useStyles();
