@@ -12,9 +12,9 @@ import {
   PriceTagIcon,
   QrIcon,
   RegionFlagIcon,
-} from '@/components/vendor/icons';
-import { Card, Chip, EmptyState, IconTile, SearchCountBar, VendorHeader } from '@/components/vendor/ui';
-import { VendorColors as C } from '@/constants/theme';
+} from '@/components/portal/icons';
+import { Card, Chip, EmptyState, IconTile, SearchCountBar, PortalHeader } from '@/components/portal/ui';
+import { PortalColors as C } from '@/constants/theme';
 import { type Branch, BRANCHES, branchCode, branchRegion, filterBranches } from '@/data/branches';
 
 type Tab = 'branches' | 'prices' | 'codes';
@@ -52,7 +52,7 @@ export default function ResourcesScreen() {
 
   return (
     <View style={styles.screen}>
-      <VendorHeader title="Resources" info={INFO} />
+      <PortalHeader title="Resources" info={INFO} />
 
       <View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} role="tablist">

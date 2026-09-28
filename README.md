@@ -46,7 +46,17 @@ Sign in with **Vendor** selected to open the vendor app (designs in `../vendor u
 | 6 | Navigation drawer | ☰ on any vendor screen |
 | 7 | Resources | `/vendor/resources` (drawer) |
 
-Code: `src/app/vendor/` (routes), `src/components/vendor/` (header, chips, drawer, tab bar, icons), `src/data/vendor.ts` (sample data + totals), `src/state/vendor-state.tsx`.
+Code: `src/app/vendor/` (routes), `src/components/portal/` (header, chips, drawer, tab bar, icons), `src/data/vendor.ts` (sample data + totals), `src/state/vendor-state.tsx`.
+
+## Rider and Admin portals
+
+Sign in with **Rider** or **Admin** selected. They share one operations data set, so a rider's delivery shows up on the admin dashboard straight away.
+
+- Rider: `/rider` — Home, Tasks, Route, Wallet, Account; task detail at `/rider/task/[id]`.
+- Admin: `/admin` — Dashboard, Shipments, Dispatch, Fleet, Finance; the drawer adds Reports, Live Fleet Map, Returns & Exceptions, Support Tickets, Merchants, Hubs, Rate Card, Announcements, Staff & Roles, Audit Log, Settings.
+- Code: `src/data/ops.ts` (model, sample network, calculations), `src/state/ops-state.tsx` (store), `src/components/portal/` (shared design kit), `src/components/admin/`, `src/components/rider/`.
+
+See `PROJECT_STATUS.md` for the full feature list.
 
 ## Structure
 

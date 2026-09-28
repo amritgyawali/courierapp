@@ -45,7 +45,7 @@ export function shadow(offsetY: number, blur: number, opacity: number, color = '
 export const cardShadow = { boxShadow: shadow(1, 6, 0.06) };
 
 /** Palette for the vendor portal (screens in `vendor ui-ux`), which uses a deeper crimson. */
-export const VendorColors = {
+export const PortalColors = {
   red: '#C0143C',
   redPressed: '#A30F32',
   redTint: '#FDF2F4',

@@ -1,8 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 
-import { UserCircleIcon } from '@/components/vendor/icons';
-import { EmptyState, VendorHeader } from '@/components/vendor/ui';
-import { VendorColors as C } from '@/constants/theme';
+import { UserCircleIcon } from '@/components/portal/icons';
+import { EmptyState, PortalHeader } from '@/components/portal/ui';
+import { PortalColors as C } from '@/constants/theme';
 
 const INFO = {
   title: 'Manage Staffs',
@@ -12,7 +12,7 @@ const INFO = {
 export default function StaffsScreen() {
   return (
     <View style={styles.screen}>
-      <VendorHeader title="Manage Staffs" info={INFO} />
+      <PortalHeader title="Manage Staffs" info={INFO} />
       <EmptyState
         icon={<UserCircleIcon size={32} color={C.red} />}
         title="No staff accounts"

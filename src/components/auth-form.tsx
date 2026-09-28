@@ -4,7 +4,7 @@ import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrandLogoLarge } from '@/components/brand';
-import { ShieldIcon, StorefrontIcon, UserIcon } from '@/components/icons';
+import { MotorbikeIcon, ShieldIcon, StorefrontIcon, UserIcon } from '@/components/icons';
 import { Colors, shadow } from '@/constants/theme';
 import { USER_ROLE_LABELS, USER_ROLES, type UserRole } from '@/constants/user-roles';
 
@@ -44,6 +44,7 @@ export function OrDivider() {
 const ROLE_ICONS: Record<UserRole, ComponentType<{ size?: number; color?: string }>> = {
   customer: UserIcon,
   vendor: StorefrontIcon,
+  rider: MotorbikeIcon,
   admin: ShieldIcon,
 };
 
@@ -130,12 +131,11 @@ const styles = StyleSheet.create({
   },
   roleOption: {
     flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 11,
+    gap: 3,
+    paddingVertical: 9,
   },
-  roleText: { fontSize: 14, fontWeight: '500' },
+  roleText: { fontSize: 12, fontWeight: '500' },
   roleTextSelected: { fontWeight: '700' },
 });

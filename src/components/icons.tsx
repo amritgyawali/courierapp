@@ -507,3 +507,13 @@ export function ShieldIcon({ size = 18, color = Colors.red, strokeWidth = 2 }: I
     </Svg>
   );
 }
+
+export function MotorbikeIcon({ size = 18, color = Colors.red, strokeWidth = 2 }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" {...stroke(color, strokeWidth)}>
+      <Circle cx={5.5} cy={17} r={3.5} />
+      <Circle cx={18.5} cy={17} r={3.5} />
+      <Path d="M15 6h2l2.5 8M5.5 17l4-7h6l3 7M9.5 10 8 6H5" />
+    </Svg>
+  );
+}

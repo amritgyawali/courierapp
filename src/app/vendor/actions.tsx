@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { DateButton } from '@/components/vendor/date-button';
+import { DateButton } from '@/components/portal/date-button';
 import {
   CalendarOutlineIcon,
   ChatBubbleIcon,
@@ -19,9 +19,9 @@ import {
   StoreSmallIcon,
   TicketTagIcon,
   TruckOutlineIcon,
-} from '@/components/vendor/icons';
-import { Card, Chip, EmptyState, ToolButton, VendorHeader } from '@/components/vendor/ui';
-import { VendorColors as C } from '@/constants/theme';
+} from '@/components/portal/icons';
+import { Card, Chip, EmptyState, ToolButton, PortalHeader } from '@/components/portal/ui';
+import { PortalColors as C } from '@/constants/theme';
 import { ORDER_STATUS_LABELS, orderLogs, type VendorComment } from '@/data/vendor';
 import { useVendorState } from '@/state/vendor-state';
 import { formatDate, formatDateTime, isSameDay } from '@/utils/format';
@@ -58,7 +58,7 @@ export default function ActionsScreen() {
 
   return (
     <View style={styles.screen}>
-      <VendorHeader title="Actions" info={INFO} />
+      <PortalHeader title="Actions" info={INFO} />
 
       <View style={styles.controls}>
         <View style={styles.row} role="tablist">

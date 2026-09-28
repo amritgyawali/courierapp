@@ -1,3 +1,4 @@
+import { type Href, router } from 'expo-router';
 import { type ReactNode, useState } from 'react';
 import {
   Modal,
@@ -12,9 +13,9 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useVendorDrawer } from '@/components/vendor/drawer';
-import { CloseIcon, InfoCircleIcon, MenuIcon, PlusIcon, SearchIcon } from '@/components/vendor/icons';
-import { shadow, VendorColors as C } from '@/constants/theme';
+import { usePortalDrawer } from '@/components/portal/drawer';
+import { ArrowLeftIcon, CloseIcon, InfoCircleIcon, MenuIcon, PlusIcon, SearchIcon } from '@/components/portal/icons';
+import { shadow, PortalColors as C } from '@/constants/theme';
 
 export type InfoContent = { title: string; body: string };
 
@@ -25,7 +26,7 @@ export type InfoContent = { title: string; body: string };
 const SERIF = Platform.select({ ios: 'Georgia', android: 'serif', default: 'Georgia, "Times New Roman", serif' });
 
 /** White "4" mark and italic wordmark used in the Dashboard header. */
-export function VendorLogo() {
+export function PortalLogo() {
   return (
     <View style={styles.logoRow} accessibilityRole="header" accessibilityLabel="Karnali Smart Group">
       <View style={styles.logoMark}>
@@ -45,23 +46,31 @@ type HeaderProps = {
   right?: ReactNode;
   /** Content of the sheet opened by the info button. */
   info?: InfoContent;
+  /** Show a back arrow instead of the drawer button (detail screens). Falls back to `backHref`. */
+  back?: boolean;
+  backHref?: Href;
 };
 
 /** Crimson app bar: drawer button, centered title or logo, info button. Paints under the status bar. */
-export function VendorHeader({ title, right, info }: HeaderProps) {
+export function PortalHeader({ title, right, info, back, backHref }: HeaderProps) {
   const insets = useSafeAreaInsets();
-  const drawer = useVendorDrawer();
+  const drawer = usePortalDrawer();
   const [infoOpen, setInfoOpen] = useState(false);
+
+  const goBack = () => {
+    if (router.canGoBack()) router.back();
+    else if (backHref) router.replace(backHref);
+  };
 
   return (
     <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Open navigation menu"
+        accessibilityLabel={back ? 'Go back' : 'Open navigation menu'}
         hitSlop={10}
-        onPress={drawer.open}
+        onPress={back ? goBack : drawer.open}
         style={({ pressed }) => [styles.headerButton, pressed && styles.pressed]}>
-        <MenuIcon size={26} color="#FFFFFF" />
+        {back ? <ArrowLeftIcon size={26} color="#FFFFFF" /> : <MenuIcon size={26} color="#FFFFFF" />}
       </Pressable>
 
       <View style={styles.headerCenter}>
@@ -70,7 +79,7 @@ export function VendorHeader({ title, right, info }: HeaderProps) {
             {title}
           </Text>
         ) : (
-          <VendorLogo />
+          <PortalLogo />
         )}
       </View>
 
@@ -331,7 +340,7 @@ export function EmptyState({ icon, title, message }: { icon: ReactNode; title: s
   );
 }
 
-export function VendorFab({
+export function PortalFab({
   label,
   onPress,
   variant = 'solid',

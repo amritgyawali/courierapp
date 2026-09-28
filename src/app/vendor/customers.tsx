@@ -1,8 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 
-import { UsersIcon } from '@/components/vendor/icons';
-import { EmptyState, VendorHeader } from '@/components/vendor/ui';
-import { VendorColors as C } from '@/constants/theme';
+import { UsersIcon } from '@/components/portal/icons';
+import { EmptyState, PortalHeader } from '@/components/portal/ui';
+import { PortalColors as C } from '@/constants/theme';
 
 const INFO = {
   title: 'Customers',
@@ -12,7 +12,7 @@ const INFO = {
 export default function CustomersScreen() {
   return (
     <View style={styles.screen}>
-      <VendorHeader title="Customers" info={INFO} />
+      <PortalHeader title="Customers" info={INFO} />
       <EmptyState
         icon={<UsersIcon size={32} color={C.red} />}
         title="No saved customers yet"

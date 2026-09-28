@@ -15,9 +15,9 @@ import {
   ShoppingBagFilledIcon,
   TruckIcon,
   UndoFilledIcon,
-} from '@/components/vendor/icons';
-import { HeaderIconButton, IconTile, InfoSheet, SectionHeading, VendorFab, VendorHeader } from '@/components/vendor/ui';
-import { shadow, VendorColors as C } from '@/constants/theme';
+} from '@/components/portal/icons';
+import { HeaderIconButton, IconTile, InfoSheet, SectionHeading, PortalFab, PortalHeader } from '@/components/portal/ui';
+import { shadow, PortalColors as C } from '@/constants/theme';
 import { dashboardSummary } from '@/data/vendor';
 import { useVendorState } from '@/state/vendor-state';
 import { formatRs, greeting, initials, isSameDay } from '@/utils/format';
@@ -38,7 +38,7 @@ export default function DashboardScreen() {
 
   return (
     <View style={styles.screen}>
-      <VendorHeader
+      <PortalHeader
         right={
           <HeaderIconButton label="Announcements and comments" onPress={() => router.navigate('/vendor/actions')}>
             <MegaphoneIcon size={26} color="#FFFFFF" />
@@ -135,7 +135,7 @@ export default function DashboardScreen() {
         />
       </ScrollView>
 
-      <VendorFab label="Add new order" variant="outline" onPress={() => setNewOrderInfo(true)} />
+      <PortalFab label="Add new order" variant="outline" onPress={() => setNewOrderInfo(true)} />
       <InfoSheet visible={newOrderInfo} content={NEW_ORDER_INFO} onClose={() => setNewOrderInfo(false)} />
     </View>
   );

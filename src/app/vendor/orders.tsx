@@ -18,7 +18,7 @@ import {
   SlidersIcon,
   UserIcon,
   WineGlassIcon,
-} from '@/components/vendor/icons';
+} from '@/components/portal/icons';
 import {
   Badge,
   Card,
@@ -28,10 +28,10 @@ import {
   InfoSheet,
   SearchCountBar,
   ToolButton,
-  VendorFab,
-  VendorHeader,
-} from '@/components/vendor/ui';
-import { VendorColors as C } from '@/constants/theme';
+  PortalFab,
+  PortalHeader,
+} from '@/components/portal/ui';
+import { PortalColors as C } from '@/constants/theme';
 import { ORDER_STAGES, ORDER_STATUS_LABELS, type OrderStage, type OrderStatus, type VendorOrder } from '@/data/vendor';
 import { useVendorState } from '@/state/vendor-state';
 import { formatDateTime, formatRs } from '@/utils/format';
@@ -99,7 +99,7 @@ export default function OrdersScreen() {
 
   return (
     <View style={styles.screen}>
-      <VendorHeader title="Orders" info={INFO} />
+      <PortalHeader title="Orders" info={INFO} />
 
       <View style={styles.chipsBar}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} role="tablist">
@@ -145,7 +145,7 @@ export default function OrdersScreen() {
         }
       />
 
-      <VendorFab label="Add new order" onPress={() => setNewOrderInfo(true)} />
+      <PortalFab label="Add new order" onPress={() => setNewOrderInfo(true)} />
 
       <SelectSheet
         visible={statusSheet}

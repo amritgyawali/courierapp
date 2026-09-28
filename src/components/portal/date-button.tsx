@@ -2,7 +2,7 @@ import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/d
 import { type ReactNode, useState } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { VendorColors as C } from '@/constants/theme';
+import { PortalColors as C } from '@/constants/theme';
 
 export type DateButtonProps = {
   value: Date | null;

@@ -1,9 +1,9 @@
 import { type ComponentProps, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { AvatarIcon, CheckIcon } from '@/components/vendor/icons';
-import { Card, VendorHeader } from '@/components/vendor/ui';
-import { shadow, VendorColors as C } from '@/constants/theme';
+import { AvatarIcon, CheckIcon } from '@/components/portal/icons';
+import { Card, PortalHeader } from '@/components/portal/ui';
+import { shadow, PortalColors as C } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
 import { useVendorState } from '@/state/vendor-state';
 
@@ -38,7 +38,7 @@ export default function VendorProfileScreen() {
 
   return (
     <View style={styles.screen}>
-      <VendorHeader title="Profile" info={INFO} />
+      <PortalHeader title="Profile" info={INFO} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.identity}>

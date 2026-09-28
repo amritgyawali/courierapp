@@ -6,10 +6,15 @@ import { EmptyBoxIllustration } from '@/components/brand';
 import { TicketIcon, TrashIcon } from '@/components/icons';
 import { Fab, ScreenHeader } from '@/components/ui';
 import { Colors, cardShadow } from '@/constants/theme';
+import { STATUS_META } from '@/data/ops';
 import { useAppState } from '@/state/app-state';
+import { useOps } from '@/state/ops-state';
+import { timeAgo } from '@/utils/format';
 
 export default function TrackScreen() {
   const { trackings, addTracking, removeTracking } = useAppState();
+  const { data } = useOps();
+  const shipments = new Map(data.shipments.map((s) => [s.id, s]));
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
@@ -26,25 +31,36 @@ export default function TrackScreen() {
           data={trackings}
           keyExtractor={(t) => t.id}
           contentContainerStyle={styles.list}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              <View style={styles.cardIcon}>
-                <TicketIcon size={22} />
+          renderItem={({ item }) => {
+            const live = shipments.get(item.number);
+            const status = live ? STATUS_META[live.status] : null;
+            return (
+              <View style={styles.card}>
+                <View style={styles.cardIcon}>
+                  <TicketIcon size={22} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.cardNumber}>{item.number}</Text>
+                  {status && live ? (
+                    <Text style={styles.cardMeta}>
+                      <Text style={{ color: status.color, fontWeight: '700' }}>{status.label}</Text> ·{' '}
+                      {timeAgo(live.updatedAt)}
+                    </Text>
+                  ) : (
+                    <Text style={styles.cardMeta}>
+                      Added {new Date(item.addedAt).toLocaleDateString()} · Awaiting update
+                    </Text>
+                  )}
+                </View>
+                <Pressable
+                  accessibilityLabel={`Remove ${item.number}`}
+                  hitSlop={10}
+                  onPress={() => removeTracking(item.id)}>
+                  <TrashIcon />
+                </Pressable>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.cardNumber}>{item.number}</Text>
-                <Text style={styles.cardMeta}>
-                  Added {new Date(item.addedAt).toLocaleDateString()} · Awaiting update
-                </Text>
-              </View>
-              <Pressable
-                accessibilityLabel={`Remove ${item.number}`}
-                hitSlop={10}
-                onPress={() => removeTracking(item.id)}>
-                <TrashIcon />
-              </Pressable>
-            </View>
-          )}
+            );
+          }}
         />
       )}
 

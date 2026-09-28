@@ -17,7 +17,7 @@ import {
   SearchIcon,
   SlidersIcon,
   TruckIcon,
-} from '@/components/vendor/icons';
+} from '@/components/portal/icons';
 import {
   Badge,
   Card,
@@ -26,9 +26,9 @@ import {
   IconTile,
   SearchCountBar,
   ToolButton,
-  VendorHeader,
-} from '@/components/vendor/ui';
-import { VendorColors as C } from '@/constants/theme';
+  PortalHeader,
+} from '@/components/portal/ui';
+import { PortalColors as C } from '@/constants/theme';
 import { paymentFigures, type VendorPayment } from '@/data/vendor';
 import { useVendorState } from '@/state/vendor-state';
 import { formatAmount, formatDateTime, formatRs, formatSigned } from '@/utils/format';
@@ -69,7 +69,7 @@ export default function AccountsScreen() {
 
   return (
     <View style={styles.screen}>
-      <VendorHeader title="Accounts" info={INFO} />
+      <PortalHeader title="Accounts" info={INFO} />
 
       <View style={styles.top}>
         <View style={styles.tabs} role="tablist">

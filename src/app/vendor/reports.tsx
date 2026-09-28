@@ -1,7 +1,7 @@
 import { type ReactNode, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { DateButton } from '@/components/vendor/date-button';
+import { DateButton } from '@/components/portal/date-button';
 import {
   BagIcon,
   CalendarGridIcon,
@@ -14,9 +14,9 @@ import {
   FilterLinesIcon,
   ReportIcon,
   TrendUpIcon,
-} from '@/components/vendor/icons';
-import { Card, Chip, chunk, GridRow, IconTile, VendorHeader } from '@/components/vendor/ui';
-import { shadow, VendorColors as C } from '@/constants/theme';
+} from '@/components/portal/icons';
+import { Card, Chip, chunk, GridRow, IconTile, PortalHeader } from '@/components/portal/ui';
+import { shadow, PortalColors as C } from '@/constants/theme';
 import { dailyBreakdown, MAX_REPORT_DAYS, ordersInRange, reportSummary, type ReportSummary } from '@/data/vendor';
 import { useVendorState } from '@/state/vendor-state';
 import { addDays, daysInclusive, formatAmount, formatDate, formatDayMonthYear, formatRs, startOfDay } from '@/utils/format';
@@ -75,7 +75,7 @@ export default function ReportsScreen() {
 
   return (
     <View style={styles.screen}>
-      <VendorHeader title="Reports" info={INFO} />
+      <PortalHeader title="Reports" info={INFO} />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.row} role="tablist">

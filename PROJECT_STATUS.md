@@ -4,7 +4,7 @@ _Last updated: 2026-09-28_
 
 ## 1. Summary
 
-This is the Karnali Smart Group courier mobile app, built with React Native and Expo (SDK 57, Expo Router). The code for all 17 screens in `app ui-ux/` is written, in the requested screen order.
+This is the Karnali Smart Group courier mobile app, built with React Native and Expo (SDK 57, Expo Router). One app serves four roles, chosen on the Login screen: **Customer** (17 designed screens in `app ui-ux/`), **Vendor** (7 designed screens in `vendor ui-ux/`), **Rider** and **Admin** (built in the same design language; see section 2).
 
 **Status:** code complete, installed, and passing all checks. The project now lives at `C:\Users\amrit\Downloads\courier\mobile app` (moved off the USB drive). Dependencies are installed; typecheck, lint and `expo-doctor` pass, and the Android and web bundles build. It has **not yet been opened on a phone**.
 
@@ -13,6 +13,9 @@ This is the Karnali Smart Group courier mobile app, built with React Native and 
 | Project setup (Expo + Expo Router + TypeScript) | Done |
 | 17 screens (UI + navigation) | Done — not yet tested |
 | Shared components (header, inputs, buttons, tab bar, icons, logo) | Done |
+| Vendor portal (7 designed screens) | Done |
+| Admin portal (50 features) | Done — sample data |
+| Rider portal | Done — sample data |
 | Data saved on the device | Done |
 | Dependency install | Done |
 | Extra native packages (maps, svg, storage, date picker) | Done |
@@ -58,7 +61,7 @@ Choosing **Vendor** on Login opens a separate vendor app. It is built from the 7
 | 3 | screen_3 accounts | `src/app/vendor/accounts.tsx` | Accounts tab |
 | 4 | screen_4 actions | `src/app/vendor/actions.tsx` | Actions tab |
 | 5 | screen_5 reports | `src/app/vendor/reports.tsx` | Report tab |
-| 6 | screen_6 navigation_drawer | `src/components/vendor/drawer.tsx` | ☰ button on any vendor screen |
+| 6 | screen_6 navigation_drawer | `src/components/portal/drawer.tsx` (config in `src/app/vendor/_layout.tsx`) | ☰ button on any vendor screen |
 | 7 | screen_7 resources | `src/app/vendor/resources.tsx` | Drawer → Resources |
 
 What works:
@@ -70,6 +73,92 @@ What works:
 - **Drawer:** slides in; the current screen is highlighted; Android Back closes it. It has Edit (profile), Customers, Manage Staffs, Check App Update and Rate Our App (open the store listing), Support Center (Contact Us), and Log out.
 - **Resources:** branch list grouped A–Z with search, branch code, region, phone (tap to call) and areas covered.
 - Vendors cannot open customer screens, and customers cannot open vendor screens.
+
+### Admin portal (sign in as **Admin**)
+
+Built in the same style as the vendor portal: crimson header, drawer, 5 bottom tabs (Dashboard, Shipments, Dispatch, Fleet, Finance). Everything else is in the drawer, grouped into Overview, Operations, Network, Finance and Administration. Code: `src/app/admin/`.
+
+The 50 admin features (modelled on what courier operations apps provide):
+
+| # | Feature | Where |
+|---|---------|-------|
+| 1 | Live KPIs for today: booked, delivered, out for delivery, pickups pending | Dashboard |
+| 2 | Unassigned parcels counter linking to Dispatch | Dashboard |
+| 3 | SLA-breach (late parcel) alerts | Dashboard, Shipments → SLA Breached |
+| 4 | 7-day delivery success rate ring | Dashboard |
+| 5 | 7-day booked vs delivered bar chart | Dashboard |
+| 6 | Money today: revenue, COD collected, COD held by riders, payouts due | Dashboard |
+| 7 | "Needs attention" inbox: rider KYC, merchant KYC, deposits, tickets, failed deliveries | Dashboard |
+| 8 | Top riders leaderboard | Dashboard |
+| 9 | Hub load vs daily capacity | Dashboard, Hubs |
+| 10 | Quick actions (assign, broadcast, rate calculator, export) | Dashboard |
+| 11 | Global search by tracking ID, phone, receiver or merchant | Dashboard, Shipments |
+| 12 | Barcode / QR scan to open a parcel (camera + typed fallback) | Dashboard header |
+| 13 | Shipment list with 9 stage filters | Shipments |
+| 14 | Filter shipments by hub | Shipments |
+| 15 | Export shipments as CSV (share sheet) | Shipments, Reports |
+| 16 | Shipment detail with SLA countdown | Shipment detail |
+| 17 | Full tracking timeline (who did what, when) | Shipment detail |
+| 18 | Charge breakdown (base, weight, COD fee, fragile) | Shipment detail |
+| 19 | Proof of delivery: receiver, OTP verified, amount, method, rider, time | Shipment detail |
+| 20 | Call / SMS / navigate to receiver; call merchant and rider | Shipment detail |
+| 21 | Assign or reassign a rider, with best-match suggestions | Shipment detail, Dispatch |
+| 22 | Manual status override with a note | Shipment detail |
+| 23 | Cancel a shipment (with confirmation) | Shipment detail |
+| 24 | Dispatch queues: deliveries at hub, pickups, returns | Dispatch |
+| 25 | Multi-select and bulk assign | Dispatch |
+| 26 | Auto-assign: spreads parcels over each hub's online riders, least busy first | Dispatch |
+| 27 | Fleet list with duty, KYC and suspended filters | Fleet |
+| 28 | Per-rider workload, success rate, rating and cash held vs limit | Fleet |
+| 29 | Rider profile: KPIs, shift time, weekly earnings | Rider detail |
+| 30 | Rider KYC documents with approve / reject | Rider detail |
+| 31 | Suspend / reactivate a rider | Rider detail |
+| 32 | Live fleet map with hub filter | Live Fleet Map |
+| 33 | Merchant list with KYC filter and search | Merchants |
+| 34 | Merchant profile: volume, success, returns | Merchant detail |
+| 35 | Merchant settlement: COD, charges, paid, due, balance | Merchant detail |
+| 36 | Approve merchant KYC; suspend / activate merchant | Merchant detail |
+| 37 | Finance overview with 7-day revenue chart | Finance |
+| 38 | Verify or reject rider COD cash deposits | Finance → Deposits |
+| 39 | Pay merchant payouts with a bank reference | Finance → Payouts |
+| 40 | Hub performance: backlog, riders on duty, success, call manager, directions | Hubs |
+| 41 | Support tickets by priority, with Start → Resolve → Reopen | Support Tickets |
+| 42 | Open the parcel linked to a ticket | Support Tickets |
+| 43 | Failed / late / returning / returned queues | Returns & Exceptions |
+| 44 | Re-attempt or return to merchant, respecting the attempt limit | Returns & Exceptions |
+| 45 | Rate card editor (per zone: first kg, extra kg, SLA; COD fee; fragile fee) | Rate Card |
+| 46 | Live price calculator | Rate Card |
+| 47 | Announcements to riders, merchants or everyone | Announcements |
+| 48 | Staff & roles: permission matrix, invite, activate / deactivate | Staff & Roles |
+| 49 | Audit log of every admin action, searchable | Audit Log |
+| 50 | Reports for any date range, plus settings (auto-assign, OTP rule, cash limit, max attempts, reset demo data) | Reports, Settings |
+
+### Rider portal (sign in as **Rider**)
+
+Same style; 5 bottom tabs (Home, Tasks, Route, Wallet, Account) plus a drawer. Code: `src/app/rider/`.
+
+- **Duty:** go online / take a break / end shift, with a live shift timer.
+- **Home:** today's to-do and delivered counts, cash in hand vs limit (with a warning above the limit), next stop with call and navigate, pickups waiting, performance (success, on-time, rating), latest announcements, scan a parcel.
+- **Tasks:** pickups, hub drops, deliveries and returns in route order (nearest first), with type filters, search, one-tap call / navigate, and a "Done today" list.
+- **Task detail:** receiver or merchant with Call, SMS and Navigate, COD amount, fragile / attempt / reschedule notes, tracking history.
+  - Pickup: slide to confirm, or scan the label to verify it is the right parcel.
+  - Hub drop and return: slide to confirm.
+  - Delivery: receiver name, 4-digit OTP check, cash or online payment, note, then slide to complete.
+  - Failed attempt: reason, reschedule date, details.
+- **Route:** map of stops, optimised order, distance and time estimate, "Navigate all" in Google Maps.
+- **Wallet:** cash in hand, collections today, deposit cash at the hub with the receipt number (admin then verifies it), deposit history.
+- **Earnings:** today / 7 days / 30 days, per-task pay, daily target bonus with progress.
+- **Account:** profile, performance, vehicle and documents with expiry warnings, history, announcements, support, SOS, log out.
+- **Emergency SOS:** call police (100), ambulance (102) or the hub manager, or share your location.
+- Everything a rider does updates the admin portal immediately (for example, a delivery raises the dashboard counts, and a deposit appears in Finance for verification).
+
+### How it fits together
+
+- `src/data/ops.ts`: the operations model (shipments, riders, merchants, hubs, deposits, payouts, tickets, staff, audit, rate card) and all calculations. It also builds a realistic sample network: 8 hubs, 12 merchants, 17 riders, about 180 shipments over two weeks.
+- `src/state/ops-state.tsx`: one store for Admin and Rider. Every change goes through a typed action, admin actions are written to the audit log, and data is saved on the phone.
+- `src/components/portal/`: the shared design kit used by Vendor, Admin and Rider (header, drawer, tab bar, chips, cards, sheets, charts, scanner, slide-to-confirm, toasts).
+- Customer **Track** now shows the live status of any tracking number that matches a shipment.
+- The Admin role uses the account "Sunita Karki (Super Admin)", and the Rider role uses "Ramesh Thapa (R-101)", until real logins exist.
 
 ### Features that work in the code
 
@@ -108,7 +197,7 @@ What works:
 4. **Search screen removed** (your request). After sign-in the app opens Track directly.
 5. **Details Form has no Save button**, as in the design. It saves every change automatically.
 6. **Extra content was written.** Only one Services slide ("Import & export") exists in the design. I wrote the other 5 slides and all About Us answers. Please review or replace this text.
-7. **Account type on Login** (Customer / Vendor / Admin) was added on request; it is not in the designs. The Account screen shows "Signed in as … · <type>". Vendors get the vendor portal; Admins still see the customer screens (there are no admin designs yet).
+7. **Account type on Login** (Customer / Vendor / Rider / Admin) was added on request; it is not in the designs. Each role opens its own portal and cannot open the others.
 8. **Vendor screens without designs:** Customers, Manage Staffs and Profile (the drawer's Edit button) use the vendor style with simple content. The Price List and Package Code tabs in Resources, and the Tickets tab in Actions, show "coming soon" or empty messages. The "+" buttons on Dashboard and Orders explain that creating orders is coming soon.
 9. **Vendor sample data:** the orders, payments and comments in `src/data/vendor.ts` copy the figures in the designs. Three orders and some comments were added so the lists and totals are complete (for example, Rs. 291 total value).
 
@@ -130,9 +219,11 @@ What works:
 - [ ] **Login / Register:** call the real KSG login API. Right now any valid email with a 6+ character password is accepted, for any account type. The server must check that the account really has the chosen type (Vendor / Admin).
 - [ ] **Vendor API:** replace the `SAMPLE_*` data in `src/data/vendor.ts` (profile, orders, payments, comments) with the KSG vendor API. Screens already calculate every total from these records.
 - [ ] **Vendor extras:** create order, price list, package codes, tickets, customers and staff management need API endpoints and designs.
-- [ ] **Admin screens:** decide what admins see. Today they get the customer screens.
+- [ ] **Operations API (Admin + Rider):** replace `createSampleOps()` in `src/data/ops.ts` and the store in `src/state/ops-state.tsx` with the KSG operations API. The screens only use the types and calculations in `ops.ts`.
+- [ ] **Staff and rider logins:** map the signed-in account to the real staff member or rider (today Admin = Sunita Karki, Rider = Ramesh Thapa).
+- [ ] **Delivery OTP by SMS:** send the receiver their OTP by SMS. The rider screen shows it as a "Demo build" hint until then.
 - [ ] **Forgot Password:** connect to the password-reset API.
-- [ ] **Tracking:** fetch live parcel status for each tracking number. Right now each parcel only shows "Awaiting update".
+- [ ] **Tracking:** Track already shows live status for tracking numbers that exist in the operations data; switch it to the tracking API.
 - [ ] **Branches:** replace the sample list in `src/data/branches.ts` with the real KSG branch list and locations. Only the first 6 branches come from the design.
 - [ ] **Details Form, notification and delivery preferences:** save them to the user's KSG account, not only on the phone.
 - [ ] **Offers:** load real offers from the server.
@@ -144,6 +235,15 @@ What works:
 - [ ] Replace the Expo placeholder app icon and splash images in `assets/images/` with the KSG logo
 - [ ] Set up EAS Build (`npx eas-cli@latest build`)
 - [ ] Test on real Android and iPhone devices
+
+### D. To be ready for the market (beyond this app's code)
+
+- [ ] Backend with real authentication and role checks enforced on the server (the app's role guards are client-side only)
+- [ ] Push notifications (new task for riders, status updates for customers and vendors) with `expo-notifications`
+- [ ] Live rider GPS in the background (`expo-location`) for the fleet map and customer ETA
+- [ ] Online COD payments (e.g. eSewa / Khalti) and printable shipping labels with barcodes
+- [ ] Crash reporting and analytics, Nepali translation, privacy policy and store listings
+- [ ] Security review and a load test of the API before launch
 
 ---
 

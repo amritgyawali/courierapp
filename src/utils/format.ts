@@ -68,3 +68,41 @@ export function initials(name: string) {
   if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
   return (words[0][0] + words[words.length - 1][0]).toUpperCase();
 }
+
+/** `3:15 PM`. */
+export function formatTime(iso: string | Date) {
+  const d = typeof iso === 'string' ? new Date(iso) : iso;
+  const hours = d.getHours() % 12 || 12;
+  return `${hours}:${String(d.getMinutes()).padStart(2, '0')} ${d.getHours() < 12 ? 'AM' : 'PM'}`;
+}
+
+/** `Sep 28`. */
+export function formatShortDate(date: Date) {
+  return `${MONTHS[date.getMonth()]} ${date.getDate()}`;
+}
+
+/** Compact relative time: `just now`, `12m ago`, `3h ago`, `2d ago`, or a date after a week. */
+export function timeAgo(iso: string, now = new Date()) {
+  const diff = Math.max(0, now.getTime() - new Date(iso).getTime());
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return formatDate(new Date(iso));
+}
+
+/** `2h 15m` for a duration in milliseconds. */
+export function formatDuration(ms: number) {
+  const totalMinutes = Math.max(0, Math.floor(ms / 60000));
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  return h ? `${h}h ${m}m` : `${m}m`;
+}
+
+/** Percentage of `part` in `whole`, rounded, 0 when `whole` is 0. */
+export function percent(part: number, whole: number) {
+  return whole > 0 ? Math.round((part / whole) * 100) : 0;
+}
