@@ -16,8 +16,8 @@ import {
   UsersIcon,
 } from '@/components/portal/icons';
 import { PortalTabBar, type PortalTab } from '@/components/portal/tab-bar';
-import { PortalColors as C } from '@/constants/theme';
 import { useVendorState, VendorStateProvider } from '@/state/vendor-state';
+import { useColors } from '@/theme';
 
 const TABS: Record<string, PortalTab> = {
   index: { label: 'Dashboard', icon: (color, active) => <HomeIcon size={23} color={color} filled={active} /> },
@@ -41,6 +41,7 @@ export default function VendorLayout() {
 }
 
 function VendorShell() {
+  const C = useColors();
   const { profile } = useVendorState();
   const utilities = useStandardUtilities();
 

@@ -1,8 +1,9 @@
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { type ReactNode, useState } from 'react';
-import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, View } from 'react-native';
 
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
+import { makeStyles, useColors } from '@/theme';
 
 export type DateButtonProps = {
   value: Date | null;
@@ -16,6 +17,8 @@ export type DateButtonProps = {
 
 /** Opens the platform date picker when its children are pressed (web version: date-button.web.tsx). */
 export function DateButton({ value, onChange, children, accessibilityLabel, minimumDate, maximumDate }: DateButtonProps) {
+  const styles = useStyles();
+  const C = useColors();
   const [iosOpen, setIosOpen] = useState(false);
   const [draft, setDraft] = useState(value ?? new Date());
 
@@ -51,7 +54,7 @@ export function DateButton({ value, onChange, children, accessibilityLabel, mini
                 display="inline"
                 minimumDate={minimumDate}
                 maximumDate={maximumDate}
-                accentColor={C.red}
+                accentColor={C.primary}
                 onChange={(_, d) => d && setDraft(d)}
               />
               <View style={styles.actions}>
@@ -75,14 +78,14 @@ export function DateButton({ value, onChange, children, accessibilityLabel, mini
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+  backdrop: { flex: 1, backgroundColor: C.overlay, justifyContent: 'flex-end' },
   sheet: { backgroundColor: '#FFFFFF', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, paddingBottom: 32 },
   actions: { flexDirection: 'row', gap: 10, marginTop: 8 },
   action: { flex: 1, borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
   cancel: { backgroundColor: '#F3F4F6' },
   cancelText: { color: C.text, fontSize: 15, fontWeight: '600' },
-  done: { backgroundColor: C.red },
-  doneText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
-});
+  done: { backgroundColor: C.primary },
+  doneText: { color: C.onPrimary, fontSize: 15, fontWeight: '700' },
+}));

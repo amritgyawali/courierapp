@@ -1,7 +1,7 @@
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { StatusBadge, Timeline } from '@/components/ops/shipment';
@@ -22,17 +22,22 @@ import { Badge, Card, Chip, EmptyState, PortalHeader } from '@/components/portal
 import { Button, KeyValue, Sheet, TextField, useToast } from '@/components/portal/widgets';
 import { taskParty } from '@/components/rider/task-card';
 import { useRider } from '@/components/rider/use-rider';
-import { PortalColors as C } from '@/constants/theme';
+import { Text, TextInput } from '@/components/text';
 import { FAIL_REASONS, type PaymentMethod, TASK_META, taskKind } from '@/data/ops';
+import { useBrand } from '@/state/branding-state';
+import { makeStyles, useColors } from '@/theme';
 import { addDays, formatDate, formatDateTime, formatRs, startOfDay } from '@/utils/format';
 import { callPhone, navigateTo, sendSms } from '@/utils/links';
 
 const RESCHEDULE_REASON = 'Receiver asked to reschedule';
 
 export default function RiderTaskDetail() {
+  const styles = useStyles();
+  const C = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const { data, dispatch, me, hub, route, actor } = useRider();
+  const { appName } = useBrand();
   const toast = useToast();
 
   const [deliverOpen, setDeliverOpen] = useState(false);
@@ -56,7 +61,7 @@ export default function RiderTaskDetail() {
       <View style={styles.screen}>
         <PortalHeader title="Task" back backHref="/rider/tasks" />
         <EmptyState
-          icon={<CubeIcon size={30} color={C.red} />}
+          icon={<CubeIcon size={30} color={C.primary} />}
           title={finished ? 'Task completed' : 'Task not available'}
           message={finished ? `${s?.id} is now ${s?.status.replace(/-/g, ' ')}.` : 'This parcel is not assigned to you any more.'}
         />
@@ -131,13 +136,13 @@ export default function RiderTaskDetail() {
           <Text style={styles.address}>{party.address}</Text>
           {kind === 'delivery' && <Text style={styles.phone}>{party.phone}</Text>}
           <View style={styles.contactRow}>
-            <ContactButton label="Call" icon={<PhoneOutlineIcon size={18} color={C.red} />} onPress={() => callPhone(party.phone)} />
+            <ContactButton label="Call" icon={<PhoneOutlineIcon size={18} color={C.primary} />} onPress={() => callPhone(party.phone)} />
             <ContactButton
               label="SMS"
-              icon={<MessageIcon size={18} color={C.red} />}
-              onPress={() => sendSms(party.phone, `Namaste, this is ${me.name.split(' ')[0]} from Karnali Smart Group about parcel ${s.id}. I am on my way.`)}
+              icon={<MessageIcon size={18} color={C.primary} />}
+              onPress={() => sendSms(party.phone, `Namaste, this is ${me.name.split(' ')[0]} from ${appName} about parcel ${s.id}. I am on my way.`)}
             />
-            <ContactButton label="Navigate" icon={<NavigationIcon size={18} color={C.red} />} onPress={() => navigateTo(target.latitude, target.longitude)} />
+            <ContactButton label="Navigate" icon={<NavigationIcon size={18} color={C.primary} />} onPress={() => navigateTo(target.latitude, target.longitude)} />
           </View>
         </Card>
 
@@ -160,7 +165,7 @@ export default function RiderTaskDetail() {
             )}
             {s.attempts > 0 && (
               <View style={styles.noteRow}>
-                <AlertTriangleIcon size={16} color={C.red} />
+                <AlertTriangleIcon size={16} color={C.amberStrong} />
                 <Text style={styles.noteText}>
                   Attempt {s.attempts + 1} of {data.settings.maxAttempts}
                   {s.failReason ? ` · last time: ${s.failReason}` : ''}
@@ -275,9 +280,9 @@ export default function RiderTaskDetail() {
         {reason === RESCHEDULE_REASON && (
           <DateButton value={reschedule} minimumDate={addDays(startOfDay(new Date()), 1)} accessibilityLabel="Reschedule date" onChange={setReschedule}>
             <View style={styles.dateBox}>
-              <CalendarOutlineIcon size={18} color={C.red} />
+              <CalendarOutlineIcon size={18} color={C.primary} />
               <Text style={styles.dateText}>Deliver on {formatDate(reschedule)}</Text>
-              <Badge label="CHANGE" bg={C.redTint} color={C.red} />
+              <Badge label="CHANGE" bg={C.primaryTint} color={C.primary} />
             </View>
           </DateButton>
         )}
@@ -299,6 +304,7 @@ export default function RiderTaskDetail() {
 }
 
 function ContactButton({ label, icon, onPress }: { label: string; icon: ReactNode; onPress: () => void }) {
+  const styles = useStyles();
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={({ pressed }) => [styles.contact, pressed && { opacity: 0.7 }]}>
       {icon}
@@ -307,7 +313,7 @@ function ContactButton({ label, icon, onPress }: { label: string; icon: ReactNod
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   pad: { padding: 16 },
   screen: { flex: 1, backgroundColor: C.screenBg },
@@ -320,16 +326,16 @@ const styles = StyleSheet.create({
   address: { fontSize: 14, color: '#4B5563', marginTop: 4, lineHeight: 20 },
   phone: { fontSize: 14, fontWeight: '600', color: C.text, marginTop: 4 },
   contactRow: { flexDirection: 'row', gap: 10, marginTop: 14 },
-  contact: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: 10, borderRadius: 12, backgroundColor: C.redTint },
-  contactText: { fontSize: 12, fontWeight: '700', color: C.red },
-  codCard: { borderColor: '#FECACA', backgroundColor: '#FFF7F7', alignItems: 'center' },
+  contact: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: 10, borderRadius: 12, backgroundColor: C.primaryTint },
+  contactText: { fontSize: 12, fontWeight: '700', color: C.primary },
+  codCard: { borderColor: C.primaryBorder, backgroundColor: C.primaryTint, alignItems: 'center' },
   prepaidCard: { borderColor: '#BBF7D0', backgroundColor: '#F7FEF9' },
-  codAmount: { fontSize: 30, fontWeight: '800', color: C.red, marginTop: 4 },
+  codAmount: { fontSize: 30, fontWeight: '800', color: C.primary, marginTop: 4 },
   notes: { gap: 8 },
   noteRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   noteText: { flex: 1, fontSize: 13, fontWeight: '600', color: C.text },
   historyToggle: { paddingVertical: 10 },
-  link: { fontSize: 13, fontWeight: '700', color: C.red },
+  link: { fontSize: 13, fontWeight: '700', color: C.primary },
   actionBar: {
     position: 'absolute',
     left: 0,
@@ -361,11 +367,11 @@ const styles = StyleSheet.create({
   otpBad: { borderColor: '#DC2626', backgroundColor: '#FEF2F2' },
   otpHint: { fontSize: 12, color: C.muted, textAlign: 'center' },
   reason: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB' },
-  reasonActive: { borderColor: C.red, backgroundColor: C.redTint },
+  reasonActive: { borderColor: C.primary, backgroundColor: C.primaryTint },
   radio: { width: 18, height: 18, borderRadius: 9, borderWidth: 2, borderColor: '#9CA3AF' },
-  radioActive: { borderColor: C.red, borderWidth: 6 },
+  radioActive: { borderColor: C.primary, borderWidth: 6 },
   reasonText: { flex: 1, fontSize: 14, color: C.text },
-  reasonTextActive: { fontWeight: '700', color: C.red },
-  dateBox: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: '#F4C8D2' },
+  reasonTextActive: { fontWeight: '700', color: C.primary },
+  dateBox: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: C.primaryBorder },
   dateText: { flex: 1, fontSize: 14, fontWeight: '600', color: C.text },
-});
+}));

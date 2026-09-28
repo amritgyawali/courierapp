@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, ScrollView, View } from 'react-native';
 
 import { StatusBadge } from '@/components/ops/shipment';
 import { CubeIcon } from '@/components/portal/icons';
@@ -8,9 +8,11 @@ import { Card, Chip, EmptyState, PortalHeader, SearchCountBar } from '@/componen
 import { useNow } from '@/components/portal/widgets';
 import { TaskCard } from '@/components/rider/task-card';
 import { useRider } from '@/components/rider/use-rider';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { type RiderTaskKind, taskKind } from '@/data/ops';
+import { makeStyles, useColors } from '@/theme';
 import { formatRs, formatTime, isSameDay } from '@/utils/format';
+import { oneOf } from '@/utils/params';
 
 type Filter = 'all' | RiderTaskKind | 'done';
 
@@ -23,20 +25,24 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: 'done', label: 'Done today' },
 ];
 
+const FILTER_KEYS = FILTERS.map((f) => f.key);
+
 const INFO = {
   title: 'My Tasks',
   body: 'Your pickups, hub drops, deliveries and returns in the suggested route order (nearest first). Tap a task for details and to complete it.',
 };
 
 export default function RiderTasks() {
+  const styles = useStyles();
+  const C = useColors();
   const params = useLocalSearchParams<{ filter?: string }>();
   const now = useNow();
   const { data, me, hub, route } = useRider(now);
-  const [filter, setFilter] = useState<Filter>((params.filter as Filter) ?? 'all');
+  const [filter, setFilter] = useState<Filter>(oneOf(params.filter, FILTER_KEYS, 'all'));
   const [seen, setSeen] = useState(params.filter);
   if (params.filter !== seen) {
     setSeen(params.filter);
-    if (params.filter) setFilter(params.filter as Filter);
+    if (params.filter) setFilter(oneOf(params.filter, FILTER_KEYS, 'all'));
   }
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState('');
@@ -71,7 +77,7 @@ export default function RiderTasks() {
       </View>
       <View style={styles.toolbar}>
         <SearchCountBar
-          icon={<CubeIcon size={18} color={C.red} />}
+          icon={<CubeIcon size={18} color={C.primary} />}
           label={filter === 'done' ? `${done.length} completed today` : `${stops.length} stop${stops.length === 1 ? '' : 's'} · ${route.distanceKm.toFixed(1)} km`}
           searching={searching}
           onToggleSearch={() => {
@@ -104,7 +110,7 @@ export default function RiderTasks() {
               </Card>
             );
           }}
-          ListEmptyComponent={<EmptyState icon={<CubeIcon size={30} color={C.red} />} title="Nothing completed yet" message="Tasks you finish today are listed here." />}
+          ListEmptyComponent={<EmptyState icon={<CubeIcon size={30} color={C.primary} />} title="Nothing completed yet" message="Tasks you finish today are listed here." />}
         />
       ) : (
         <FlatList
@@ -116,7 +122,7 @@ export default function RiderTasks() {
           )}
           ListEmptyComponent={
             <EmptyState
-              icon={<CubeIcon size={30} color={C.red} />}
+              icon={<CubeIcon size={30} color={C.primary} />}
               title={q ? 'No matching tasks' : 'No tasks here'}
               message={q ? 'Try a different search.' : 'New tasks appear here as dispatch assigns them to you.'}
             />
@@ -127,7 +133,7 @@ export default function RiderTasks() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   chipsBar: { backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#F1F2F4' },
@@ -137,4 +143,4 @@ const styles = StyleSheet.create({
   doneCard: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14 },
   doneTitle: { fontSize: 15, fontWeight: '700', color: C.textStrong },
   doneMeta: { fontSize: 12, color: C.muted, marginTop: 2 },
-});
+}));

@@ -1,17 +1,20 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { useAdmin } from '@/components/admin/use-admin';
 import { ShipmentCard } from '@/components/ops/shipment';
 import { BikeIcon, MessageIcon, PhoneOutlineIcon, ShieldCheckIcon } from '@/components/portal/icons';
 import { Badge, Card, EmptyState, PortalHeader } from '@/components/portal/ui';
 import { Avatar, Button, KeyValue, ProgressBar, useNow, useToast } from '@/components/portal/widgets';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { DUTY_META, KYC_META, riderEarnings, riderStats } from '@/data/ops';
+import { makeStyles, useColors } from '@/theme';
 import { addDays, formatDate, formatDuration, formatRs, timeAgo } from '@/utils/format';
 import { callPhone, sendSms } from '@/utils/links';
 
 export default function AdminRiderDetail() {
+  const styles = useStyles();
+  const C = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, dispatch, actor, lookup } = useAdmin();
   const toast = useToast();
@@ -22,7 +25,7 @@ export default function AdminRiderDetail() {
     return (
       <View style={styles.screen}>
         <PortalHeader title="Rider" back backHref="/admin/riders" />
-        <EmptyState icon={<BikeIcon size={30} color={C.red} />} title="Rider not found" message={`No rider with ID ${id}.`} />
+        <EmptyState icon={<BikeIcon size={30} color={C.primary} />} title="Rider not found" message={`No rider with ID ${id}.`} />
       </View>
     );
   }
@@ -173,6 +176,7 @@ export default function AdminRiderDetail() {
 }
 
 function Kpi({ label, value, color }: { label: string; value: string | number; color?: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.kpi}>
       <Text style={[styles.kpiValue, color ? { color } : null]}>{value}</Text>
@@ -181,7 +185,7 @@ function Kpi({ label, value, color }: { label: string; value: string | number; c
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   content: { padding: 12, gap: 12, paddingBottom: 40 },
@@ -205,4 +209,4 @@ const styles = StyleSheet.create({
   docRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6 },
   docName: { fontSize: 14, fontWeight: '600', color: C.text },
   section: { fontSize: 15, fontWeight: '700', color: C.navy, marginTop: 4 },
-});
+}));

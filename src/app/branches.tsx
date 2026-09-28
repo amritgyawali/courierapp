@@ -1,12 +1,16 @@
 import { useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Pressable, View } from 'react-native';
 
 import { CloseIcon, SearchIcon } from '@/components/icons';
+import { Text, TextInput } from '@/components/text';
 import { ScreenHeader } from '@/components/ui';
-import { Colors } from '@/constants/theme';
 import { filterBranches } from '@/data/branches';
+import { useBrand } from '@/state/branding-state';
+import { makeStyles } from '@/theme';
 
 export default function BranchesScreen() {
+  const styles = useStyles();
+  const { shortName } = useBrand();
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState('');
   const branches = useMemo(() => filterBranches(query), [query]);
@@ -14,7 +18,7 @@ export default function BranchesScreen() {
   return (
     <View style={styles.screen}>
       <ScreenHeader
-        title="Search KSG Branches"
+        title={`Search ${shortName} Branches`}
         back
         right={
           <Pressable
@@ -63,7 +67,7 @@ export default function BranchesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   screen: { flex: 1, backgroundColor: '#FFFFFF' },
   searchBar: {
     flexDirection: 'row',
@@ -79,7 +83,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     paddingVertical: 11,
-    color: Colors.black,
+    color: C.textStrong,
     outlineWidth: 0,
   },
   item: {
@@ -89,8 +93,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
-  index: { color: '#D81B43', fontWeight: '700', fontSize: 15, marginBottom: 4 },
+  index: { color: C.primary, fontWeight: '700', fontSize: 15, marginBottom: 4 },
   name: { color: '#000000', fontWeight: '900', fontSize: 15, letterSpacing: 0.6, marginBottom: 4 },
   address: { color: '#7E868E', fontWeight: '600', fontSize: 13, letterSpacing: 0.6, lineHeight: 18 },
-  noResults: { textAlign: 'center', color: Colors.textMuted, marginTop: 40, fontSize: 15 },
-});
+  noResults: { textAlign: 'center', color: C.muted, marginTop: 40, fontSize: 15 },
+}));

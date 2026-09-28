@@ -1,13 +1,15 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, View } from 'react-native';
 
 import { useAdmin } from '@/components/admin/use-admin';
 import { StoreSmallIcon } from '@/components/portal/icons';
 import { Badge, Card, Chip, EmptyState, PortalHeader, SearchCountBar } from '@/components/portal/ui';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { KYC_META, type Merchant, merchantStats } from '@/data/ops';
+import { makeStyles, useColors } from '@/theme';
 import { formatRs } from '@/utils/format';
+import { oneOf } from '@/utils/params';
 
 type Filter = 'all' | 'verified' | 'pending' | 'suspended';
 
@@ -18,25 +20,29 @@ const FILTERS: { key: Filter; label: string; test: (m: Merchant) => boolean }[] 
   { key: 'suspended', label: 'Suspended', test: (m) => !m.active },
 ];
 
+const FILTER_KEYS = FILTERS.map((f) => f.key);
+
 const INFO = {
   title: 'Merchants',
-  body: 'Businesses that ship with Karnali Smart Group. Review KYC for new merchants, check volume and success rates, and see what each merchant is owed.',
+  body: 'Businesses that ship with us. Review KYC for new merchants, check volume and success rates, and see what each merchant is owed.',
 };
 
 export default function MerchantsScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const params = useLocalSearchParams<{ filter?: string }>();
   const { data, lookup } = useAdmin();
-  const [filter, setFilter] = useState<Filter>((params.filter as Filter) ?? 'all');
+  const [filter, setFilter] = useState<Filter>(oneOf(params.filter, FILTER_KEYS, 'all'));
   const [seen, setSeen] = useState(params.filter);
   if (params.filter !== seen) {
     setSeen(params.filter);
-    if (params.filter) setFilter(params.filter as Filter);
+    if (params.filter) setFilter(oneOf(params.filter, FILTER_KEYS, 'all'));
   }
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState('');
 
   const q = query.trim().toLowerCase();
-  const test = FILTERS.find((f) => f.key === filter)!.test;
+  const test = (FILTERS.find((f) => f.key === filter) ?? FILTERS[0]).test;
   const list = data.merchants
     .filter((m) => test(m) && (!q || m.name.toLowerCase().includes(q) || m.owner.toLowerCase().includes(q) || m.phone.includes(q)))
     .map((m) => ({ merchant: m, stats: merchantStats(data, m.id) }))
@@ -54,7 +60,7 @@ export default function MerchantsScreen() {
       </View>
       <View style={styles.toolbar}>
         <SearchCountBar
-          icon={<StoreSmallIcon size={18} color={C.red} />}
+          icon={<StoreSmallIcon size={18} color={C.primary} />}
           label={`${list.length} merchant${list.length === 1 ? '' : 's'}`}
           searching={searching}
           onToggleSearch={() => {
@@ -76,7 +82,7 @@ export default function MerchantsScreen() {
               <Card style={[styles.card, pressed && { opacity: 0.85 }]}>
                 <View style={styles.head}>
                   <View style={styles.logo}>
-                    <StoreSmallIcon size={20} color={C.red} />
+                    <StoreSmallIcon size={20} color={C.primary} />
                   </View>
                   <View style={styles.flex}>
                     <Text style={styles.name}>{m.name}</Text>
@@ -99,13 +105,14 @@ export default function MerchantsScreen() {
             )}
           </Pressable>
         )}
-        ListEmptyComponent={<EmptyState icon={<StoreSmallIcon size={30} color={C.red} />} title="No merchants" message="Try another filter or search." />}
+        ListEmptyComponent={<EmptyState icon={<StoreSmallIcon size={30} color={C.primary} />} title="No merchants" message="Try another filter or search." />}
       />
     </View>
   );
 }
 
 function Stat({ label, value, color }: { label: string; value: string | number; color?: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.stat}>
       <Text style={[styles.statValue, color ? { color } : null]} numberOfLines={1} adjustsFontSizeToFit>
@@ -116,7 +123,7 @@ function Stat({ label, value, color }: { label: string; value: string | number; 
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   chipsBar: { backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#F1F2F4' },
@@ -125,11 +132,11 @@ const styles = StyleSheet.create({
   list: { padding: 12, gap: 12, paddingBottom: 40 },
   card: { padding: 14, gap: 12 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  logo: { width: 44, height: 44, borderRadius: 12, backgroundColor: C.redTint, alignItems: 'center', justifyContent: 'center' },
+  logo: { width: 44, height: 44, borderRadius: 12, backgroundColor: C.primaryTint, alignItems: 'center', justifyContent: 'center' },
   name: { fontSize: 15, fontWeight: '700', color: C.textStrong },
   meta: { fontSize: 12, color: C.muted, marginTop: 2 },
   stats: { flexDirection: 'row', backgroundColor: '#F8FAFC', borderRadius: 12, paddingVertical: 10 },
   stat: { flex: 1, alignItems: 'center', paddingHorizontal: 4 },
   statValue: { fontSize: 15, fontWeight: '800', color: C.textStrong },
   statLabel: { fontSize: 11, color: C.muted, marginTop: 2 },
-});
+}));

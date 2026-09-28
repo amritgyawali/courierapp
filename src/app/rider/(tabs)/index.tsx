@@ -1,7 +1,7 @@
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import {
   AlertTriangleIcon,
@@ -20,11 +20,14 @@ import { Card, HeaderIconButton, PortalHeader, SectionHeading } from '@/componen
 import { Button, ProgressBar, ProgressRing, StatTile, useNow, useToast } from '@/components/portal/widgets';
 import { TaskCard } from '@/components/rider/task-card';
 import { useRider } from '@/components/rider/use-rider';
-import { PortalColors as C, shadow } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { DUTY_META, type Duty } from '@/data/ops';
+import { makeStyles, shadow, useColors } from '@/theme';
 import { formatDuration, formatRs, greeting, timeAgo } from '@/utils/format';
 
 export default function RiderHome() {
+  const styles = useStyles();
+  const C = useColors();
   const now = useNow(30000);
   const { data, dispatch, me, hub, stats, route, actor } = useRider(now);
   const toast = useToast();
@@ -78,7 +81,7 @@ export default function RiderHome() {
               accessibilityLabel={online ? 'End shift' : 'Start shift'}
               onPress={() => setDuty(online ? 'offline' : 'online')}
               style={({ pressed }) => [styles.power, online ? styles.powerOn : styles.powerOff, pressed && { opacity: 0.8 }]}>
-              <PowerIcon size={26} color={online ? C.red : '#FFFFFF'} />
+              <PowerIcon size={26} color={online ? C.primary : '#FFFFFF'} />
             </Pressable>
           </View>
           {online ? (
@@ -112,14 +115,14 @@ export default function RiderHome() {
         {/* Today */}
         <View style={styles.row}>
           <StatTile icon={<CubeIcon size={20} color="#2B6CB0" />} tint="#E9F2FE" value={stats.active} label="To do" onPress={() => router.navigate('/rider/tasks')} />
-          <StatTile icon={<CheckCircleIcon size={20} color="#16A34A" />} tint="#ECFDF5" value={stats.deliveredToday} label="Delivered" note={`${stats.failedToday} failed`} noteColor={stats.failedToday ? C.red : C.muted} />
+          <StatTile icon={<CheckCircleIcon size={20} color="#16A34A" />} tint="#ECFDF5" value={stats.deliveredToday} label="Delivered" note={`${stats.failedToday} failed`} noteColor={stats.failedToday ? C.danger : C.muted} />
         </View>
 
         {/* COD */}
         <Card style={styles.cod}>
           <View style={styles.codTop}>
             <View style={styles.codIcon}>
-              <WalletIcon size={22} color={C.red} />
+              <WalletIcon size={22} color={C.primary} />
             </View>
             <View style={styles.flex}>
               <Text style={styles.codLabel}>Cash in hand</Text>
@@ -136,7 +139,7 @@ export default function RiderHome() {
 
         {/* Next stop */}
         <SectionHeading
-          icon={<CubeIcon size={20} color={C.red} />}
+          icon={<CubeIcon size={20} color={C.primary} />}
           title={next ? `Next stop · ${route.stops.length} left` : 'Next stop'}
           right={
             next ? (
@@ -168,7 +171,7 @@ export default function RiderHome() {
         )}
 
         {/* Performance */}
-        <SectionHeading icon={<CheckCircleIcon size={20} color={C.red} />} title="Your performance" />
+        <SectionHeading icon={<CheckCircleIcon size={20} color={C.primary} />} title="Your performance" />
         <Card style={styles.perf}>
           <ProgressRing value={stats.successRate} label="success" size={88} color={stats.successRate >= 90 ? '#16A34A' : C.amber} />
           <View style={styles.perfStats}>
@@ -182,7 +185,7 @@ export default function RiderHome() {
         {news.length > 0 && (
           <>
             <SectionHeading
-              icon={<MegaphoneOutlineIcon size={20} color={C.red} />}
+              icon={<MegaphoneOutlineIcon size={20} color={C.primary} />}
               title="Announcements"
               right={
                 <Pressable accessibilityRole="button" onPress={() => router.navigate('/rider/announcements')} hitSlop={8}>
@@ -211,6 +214,7 @@ export default function RiderHome() {
 }
 
 function PerfRow({ label, value }: { label: string; value: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.perfRow}>
       <Text style={styles.perfLabel}>{label}</Text>
@@ -219,11 +223,11 @@ function PerfRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   content: { padding: 14, gap: 12, paddingBottom: 40 },
-  duty: { backgroundColor: C.red, borderRadius: 16, padding: 16, gap: 14, boxShadow: shadow(2, 10, 0.18, C.red) },
+  duty: { backgroundColor: C.primary, borderRadius: 16, padding: 16, gap: 14, boxShadow: shadow(2, 10, 0.18, C.primary) },
   dutyOff: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.cardBorder, boxShadow: shadow(1, 6, 0.05) },
   dutyTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   hello: { color: '#FFFFFF', fontSize: 18, fontWeight: '800' },
@@ -259,12 +263,12 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 12 },
   cod: { padding: 14, gap: 10 },
   codTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  codIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: C.redTint, alignItems: 'center', justifyContent: 'center' },
+  codIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: C.primaryTint, alignItems: 'center', justifyContent: 'center' },
   codLabel: { fontSize: 12, color: C.muted, fontWeight: '600' },
   codValue: { fontSize: 22, fontWeight: '800', color: C.textStrong },
   codFoot: { flexDirection: 'row', justifyContent: 'space-between' },
   codMeta: { fontSize: 12, color: C.muted },
-  link: { fontSize: 13, fontWeight: '700', color: C.red },
+  link: { fontSize: 13, fontWeight: '700', color: C.primary },
   done: { padding: 22, alignItems: 'center', gap: 6 },
   doneTitle: { fontSize: 16, fontWeight: '800', color: C.textStrong },
   doneText: { fontSize: 13, color: C.muted, textAlign: 'center' },
@@ -286,4 +290,4 @@ const styles = StyleSheet.create({
   newsTitle: { fontSize: 14, fontWeight: '700', color: C.textStrong },
   newsBody: { fontSize: 13, color: '#4B5563', lineHeight: 19 },
   newsMeta: { fontSize: 11, color: C.faint, marginTop: 2 },
-});
+}));

@@ -61,7 +61,7 @@ export function greeting(now = new Date()) {
   return 'Good Evening!';
 }
 
-/** First letters of the first and last words: `Trending Shop Nepal` → `TN`. */
+/** First letters of the first and last words: `Hasta Pun` → `HP`. */
 export function initials(name: string) {
   const words = name.trim().split(/\s+/).filter(Boolean);
   if (words.length === 0) return '';

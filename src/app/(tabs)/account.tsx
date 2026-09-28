@@ -1,15 +1,19 @@
 import { type Href, router } from 'expo-router';
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import { NepalSkyline } from '@/components/brand';
 import { BellIcon, ChevronRightIcon, DeliveryPrefIcon, UserIcon } from '@/components/icons';
+import { Text } from '@/components/text';
 import { Button, ScreenHeader } from '@/components/ui';
-import { Colors, cardShadow } from '@/constants/theme';
 import { USER_ROLE_LABELS } from '@/constants/user-roles';
-import { useAppState } from '@/state/app-state';
+import { displayName, useAppState } from '@/state/app-state';
+import { useBrand } from '@/state/branding-state';
+import { cardShadow, makeStyles } from '@/theme';
+import { initials } from '@/utils/format';
 
 function MenuRow({ icon, label, href }: { icon: ReactNode; label: string; href: Href }) {
+  const styles = useStyles();
   return (
     <Pressable
       accessibilityRole="button"
@@ -25,16 +29,29 @@ function MenuRow({ icon, label, href }: { icon: ReactNode; label: string; href: 
 }
 
 export default function AccountScreen() {
-  const { user, signOut } = useAppState();
+  const styles = useStyles();
+  const { user, details, signOut } = useAppState();
+  const { shortName } = useBrand();
+  const name = displayName(user, details);
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader title="My KSG account" />
+      <ScreenHeader title={`My ${shortName} account`} />
       <ScrollView contentContainerStyle={styles.content}>
         {user && (
-          <Text style={styles.signedInAs} numberOfLines={1}>
-            Signed in as <Text style={styles.signedInEmail}>{user.email}</Text> · {USER_ROLE_LABELS[user.role]}
-          </Text>
+          <View style={styles.profile}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{initials(name)}</Text>
+            </View>
+            <View style={styles.profileText}>
+              <Text style={styles.profileName} numberOfLines={1}>
+                {name}
+              </Text>
+              <Text style={styles.signedInAs} numberOfLines={1}>
+                {user.email} · {USER_ROLE_LABELS[user.role]}
+              </Text>
+            </View>
+          </View>
         )}
         <View style={styles.card}>
           <MenuRow icon={<UserIcon />} label="Account Details" href="/account-details" />
@@ -58,10 +75,32 @@ export default function AccountScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#F8F9FA' },
+const useStyles = makeStyles(({ colors: C }) => ({
+  screen: { flex: 1, backgroundColor: C.screenBg },
   content: { padding: 16, paddingTop: 20 },
-  card: { backgroundColor: '#FFFFFF', borderRadius: 8, overflow: 'hidden', ...cardShadow },
+  card: { backgroundColor: C.card, borderRadius: 12, overflow: 'hidden', ...cardShadow },
+  profile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    backgroundColor: C.primary,
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 16,
+  },
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: { color: C.onPrimary, fontSize: 18, fontWeight: '800', letterSpacing: 1 },
+  profileText: { flex: 1 },
+  profileName: { color: C.onPrimary, fontSize: 18, fontWeight: '800' },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -70,9 +109,8 @@ const styles = StyleSheet.create({
     paddingVertical: 17,
   },
   rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  rowLabel: { fontSize: 15, fontWeight: '600', color: Colors.black, letterSpacing: -0.2 },
+  rowLabel: { fontSize: 15, fontWeight: '600', color: C.textStrong, letterSpacing: -0.2 },
   divider: { height: 1, backgroundColor: '#F3F4F6', marginHorizontal: 12 },
   signOutWrap: { padding: 12, paddingTop: 8 },
-  signedInAs: { fontSize: 13, color: Colors.textMuted, marginBottom: 12, marginLeft: 2 },
-  signedInEmail: { fontWeight: '600', color: Colors.text },
-});
+  signedInAs: { fontSize: 13, color: C.onPrimaryMuted, marginTop: 2 },
+}));

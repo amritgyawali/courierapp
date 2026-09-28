@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { appVersionLabel } from '@/components/portal/drawer';
 import {
@@ -16,12 +16,15 @@ import { Badge, Card, PortalHeader, SectionHeading } from '@/components/portal/u
 import { Avatar, KeyValue, ListRow, ProgressRing, useNow } from '@/components/portal/widgets';
 import { SosSheet } from '@/components/rider/sos-sheet';
 import { useRider } from '@/components/rider/use-rider';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { DUTY_META, KYC_META } from '@/data/ops';
 import { useAppState } from '@/state/app-state';
+import { makeStyles, useColors } from '@/theme';
 import { formatDate } from '@/utils/format';
 
 export default function RiderAccount() {
+  const styles = useStyles();
+  const C = useColors();
   const { me, hub, stats } = useRider();
   const { user, signOut } = useAppState();
   const [sos, setSos] = useState(false);
@@ -54,7 +57,7 @@ export default function RiderAccount() {
           </View>
         </Card>
 
-        <SectionHeading icon={<BikeIcon size={20} color={C.red} />} title="Vehicle & documents" />
+        <SectionHeading icon={<BikeIcon size={20} color={C.primary} />} title="Vehicle & documents" />
         <Card style={styles.card}>
           <KeyValue label="Vehicle" value={`${me.vehicle.type} · ${me.vehicle.plate}`} />
           <KeyValue label="Phone" value={me.phone} />
@@ -76,11 +79,11 @@ export default function RiderAccount() {
         </Card>
 
         <Card>
-          <ListRow icon={<HistoryIcon size={20} color={C.red} />} title="Delivery history" onPress={() => router.navigate('/rider/history')} />
-          <ListRow icon={<MegaphoneOutlineIcon size={20} color={C.red} />} title="Announcements" onPress={() => router.navigate('/rider/announcements')} />
-          <ListRow icon={<SupportIcon size={20} color={C.red} />} title="Support center" subtitle="Contacts and office location" onPress={() => router.push('/contact')} />
+          <ListRow icon={<HistoryIcon size={20} color={C.primary} />} title="Delivery history" onPress={() => router.navigate('/rider/history')} />
+          <ListRow icon={<MegaphoneOutlineIcon size={20} color={C.primary} />} title="Announcements" onPress={() => router.navigate('/rider/announcements')} />
+          <ListRow icon={<SupportIcon size={20} color={C.primary} />} title="Support center" subtitle="Contacts and office location" onPress={() => router.push('/contact')} />
           <ListRow icon={<SirenIcon size={20} color="#DC2626" />} title="Emergency SOS" subtitle="Police, ambulance, hub manager" onPress={() => setSos(true)} />
-          <ListRow icon={<LogoutIcon size={20} color={C.red} />} title="Log out" onPress={signOut} />
+          <ListRow icon={<LogoutIcon size={20} color={C.danger} />} title="Log out" onPress={signOut} />
         </Card>
 
         <Text style={styles.version}>{appVersionLabel()}</Text>
@@ -90,7 +93,7 @@ export default function RiderAccount() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   content: { padding: 12, gap: 12, paddingBottom: 40 },
@@ -105,4 +108,4 @@ const styles = StyleSheet.create({
   docName: { fontSize: 14, fontWeight: '600', color: C.text },
   warn: { fontSize: 12, fontWeight: '600', color: '#B45309', marginTop: 8 },
   version: { fontSize: 12, color: C.faint, textAlign: 'center' },
-});
+}));

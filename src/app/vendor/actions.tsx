@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, View } from 'react-native';
 
 import { DateButton } from '@/components/portal/date-button';
 import {
@@ -21,9 +21,10 @@ import {
   TruckOutlineIcon,
 } from '@/components/portal/icons';
 import { Card, Chip, EmptyState, ToolButton, PortalHeader } from '@/components/portal/ui';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { ORDER_STATUS_LABELS, orderLogs, type VendorComment } from '@/data/vendor';
 import { useVendorState } from '@/state/vendor-state';
+import { makeStyles, useColors } from '@/theme';
 import { formatDate, formatDateTime, isSameDay } from '@/utils/format';
 
 type Category = 'comments' | 'logs' | 'tickets';
@@ -31,12 +32,14 @@ type CommentView = 'unclosed' | 'actions';
 
 const INFO = {
   title: 'Actions',
-  body: 'Comments are messages from KSG about your orders. Unclosed shows the ones you have not handled yet; tap Mark As Read once you have seen one and it moves to Actions. Logs is the status history of every order, and Tickets lists support requests.',
+  body: 'Comments are messages from our team about your orders. Unclosed shows the ones you have not handled yet; tap Mark As Read once you have seen one and it moves to Actions. Logs is the status history of every order, and Tickets lists support requests.',
 };
 
 const openOrder = (orderId: string) => router.navigate({ pathname: '/vendor/orders', params: { q: orderId } });
 
 export default function ActionsScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const { orders, comments, isCommentRead, markCommentRead } = useVendorState();
   const [category, setCategory] = useState<Category>('comments');
   const [view, setView] = useState<CommentView>('unclosed');
@@ -126,7 +129,7 @@ export default function ActionsScreen() {
             tint
             label={newestFirst ? 'Showing newest first. Show oldest first' : 'Showing oldest first. Show newest first'}
             onPress={() => setNewestFirst(!newestFirst)}>
-            <SortIcon size={19} color={C.red} />
+            <SortIcon size={19} color={C.primary} />
           </ToolButton>
         </View>
       </View>
@@ -146,11 +149,11 @@ export default function ActionsScreen() {
           )}
           ListEmptyComponent={
             <EmptyState
-              icon={<ChatBubbleIcon size={30} color={C.red} />}
+              icon={<ChatBubbleIcon size={30} color={C.primary} />}
               title={view === 'unclosed' ? `No unclosed comments${emptyForDate}` : `No closed comments${emptyForDate}`}
               message={
                 view === 'unclosed'
-                  ? 'You are all caught up. New comments from KSG will appear here.'
+                  ? 'You are all caught up. New comments from our team will appear here.'
                   : 'Comments you mark as read are kept here.'
               }
             />
@@ -175,7 +178,7 @@ export default function ActionsScreen() {
           )}
           ListEmptyComponent={
             <EmptyState
-              icon={<ClockIcon size={30} color={C.red} />}
+              icon={<ClockIcon size={30} color={C.primary} />}
               title={`No logs${emptyForDate}`}
               message="Order status changes are recorded here."
             />
@@ -185,7 +188,7 @@ export default function ActionsScreen() {
 
       {category === 'tickets' && (
         <EmptyState
-          icon={<TicketTagIcon size={30} color={C.red} />}
+          icon={<TicketTagIcon size={30} color={C.primary} />}
           title="No tickets"
           message="Support tickets raised for your orders will be listed here."
         />
@@ -195,15 +198,19 @@ export default function ActionsScreen() {
 }
 
 function OrderPill({ id }: { id: string }) {
+  const styles = useStyles();
+  const C = useColors();
   return (
     <View style={styles.orderPill}>
-      <StoreSmallIcon size={15} color={C.red} />
+      <StoreSmallIcon size={15} color={C.primary} />
       <Text style={styles.orderPillText}>#{id}</Text>
     </View>
   );
 }
 
 function CardFooter({ at, onPress }: { at: string; onPress: () => void }) {
+  const styles = useStyles();
+  const C = useColors();
   return (
     <Pressable
       accessibilityRole="button"
@@ -214,7 +221,7 @@ function CardFooter({ at, onPress }: { at: string; onPress: () => void }) {
         <ClockIcon size={16} color={C.faint} />
         <Text style={styles.footerText}>{formatDateTime(at)}</Text>
       </View>
-      <ChevronRightIcon size={17} color={C.red} />
+      <ChevronRightIcon size={17} color={C.primary} />
     </Pressable>
   );
 }
@@ -230,6 +237,8 @@ function CommentCard({
   lastStatus: string;
   onMarkRead: () => void;
 }) {
+  const styles = useStyles();
+  const C = useColors();
   return (
     <Card style={styles.card}>
       <View style={styles.cardHeader}>
@@ -281,8 +290,8 @@ function CommentCard({
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#F7F8FA' },
+const useStyles = makeStyles(({ colors: C }) => ({
+  screen: { flex: 1, backgroundColor: C.screenBg },
   controls: {
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 14,
@@ -317,9 +326,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 11,
     paddingVertical: 5,
     borderRadius: 8,
-    backgroundColor: C.redSoft,
+    backgroundColor: C.primarySoft,
   },
-  orderPillText: { fontSize: 13, fontWeight: '700', color: C.red, letterSpacing: 0.3 },
+  orderPillText: { fontSize: 13, fontWeight: '700', color: C.primary, letterSpacing: 0.3 },
   readButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -350,4 +359,4 @@ const styles = StyleSheet.create({
   },
   footerLeft: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   footerText: { fontSize: 13, color: C.faint },
-});
+}));

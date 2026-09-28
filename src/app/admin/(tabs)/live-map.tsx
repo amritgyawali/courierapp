@@ -1,13 +1,14 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, View } from 'react-native';
 
 import { useAdmin } from '@/components/admin/use-admin';
 import { BranchMap, type MapPoint, NEPAL_REGION } from '@/components/branch-map';
 import { Chip, PortalHeader } from '@/components/portal/ui';
 import { Avatar } from '@/components/portal/widgets';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { DUTY_META, riderTasks } from '@/data/ops';
+import { makeStyles } from '@/theme';
 
 const INFO = {
   title: 'Live Fleet Map',
@@ -15,6 +16,7 @@ const INFO = {
 };
 
 export default function LiveMapScreen() {
+  const styles = useStyles();
   const { data, lookup } = useAdmin();
   const [hubId, setHubId] = useState<string | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
@@ -74,7 +76,7 @@ export default function LiveMapScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 12, backgroundColor: '#FFFFFF' },
@@ -91,8 +93,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: C.cardBorder,
   },
-  rowActive: { borderColor: C.red },
+  rowActive: { borderColor: C.primary },
   name: { fontSize: 14, fontWeight: '700', color: C.textStrong },
   meta: { fontSize: 12, color: C.muted, marginTop: 1 },
   duty: { fontSize: 12, fontWeight: '700' },
-});
+}));

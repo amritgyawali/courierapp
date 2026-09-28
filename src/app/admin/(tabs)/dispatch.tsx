@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, View } from 'react-native';
 
 import { AssignSheet } from '@/components/admin/assign-sheet';
 import { useAdmin } from '@/components/admin/use-admin';
@@ -8,8 +8,9 @@ import { ShipmentCard } from '@/components/ops/shipment';
 import { CheckSquareIcon, DispatchIcon, ReturnArrowIcon, StoreSmallIcon, TruckIcon } from '@/components/portal/icons';
 import { Chip, EmptyState, PortalHeader } from '@/components/portal/ui';
 import { Button, useNow, useToast } from '@/components/portal/widgets';
-import { PortalColors as C, shadow } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { needsRider, operatingHubId, riderTasks, type Shipment } from '@/data/ops';
+import { makeStyles, shadow, useColors } from '@/theme';
 
 type Queue = 'deliveries' | 'pickups' | 'returns';
 
@@ -25,6 +26,8 @@ const INFO = {
 };
 
 export default function DispatchScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const { data, dispatch, actor, lookup } = useAdmin();
   const toast = useToast();
   const now = useNow();
@@ -137,7 +140,7 @@ export default function DispatchScreen() {
             aria-checked={allSelected}
             onPress={() => setSelected(allSelected ? new Set() : new Set(list.map((s) => s.id)))}
             style={styles.selectAll}>
-            <CheckSquareIcon checked={allSelected} size={20} color={allSelected ? C.red : '#9CA3AF'} />
+            <CheckSquareIcon checked={allSelected} size={20} color={allSelected ? C.primary : '#9CA3AF'} />
             <Text style={styles.selectAllText}>{selected.size ? `${selectedShipments.length} selected` : `Select all ${list.length}`}</Text>
           </Pressable>
         )}
@@ -159,7 +162,7 @@ export default function DispatchScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            icon={<DispatchIcon size={30} color={C.red} />}
+            icon={<DispatchIcon size={30} color={C.primary} />}
             title="All caught up"
             message="Every parcel in this queue has a rider. New parcels will appear here as they arrive."
           />
@@ -188,7 +191,7 @@ export default function DispatchScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   top: { backgroundColor: '#FFFFFF', paddingHorizontal: 12, paddingTop: 12, paddingBottom: 8, gap: 10, borderBottomWidth: 1, borderBottomColor: '#F1F2F4' },
@@ -211,4 +214,4 @@ const styles = StyleSheet.create({
     borderTopColor: '#EEF0F3',
     boxShadow: shadow(-2, 10, 0.06),
   },
-});
+}));

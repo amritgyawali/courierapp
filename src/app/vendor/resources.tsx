@@ -1,5 +1,5 @@
 import { type ReactNode, useState } from 'react';
-import { Linking, Pressable, ScrollView, SectionList, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, ScrollView, SectionList, View } from 'react-native';
 
 import {
   ArchiveIcon,
@@ -14,14 +14,15 @@ import {
   RegionFlagIcon,
 } from '@/components/portal/icons';
 import { Card, Chip, EmptyState, IconTile, SearchCountBar, PortalHeader } from '@/components/portal/ui';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { type Branch, BRANCHES, branchCode, branchRegion, filterBranches } from '@/data/branches';
+import { makeStyles, useColors } from '@/theme';
 
 type Tab = 'branches' | 'prices' | 'codes';
 
 const INFO = {
   title: 'Resources',
-  body: 'Reference information for your shop: every KSG branch with the areas it covers and its phone number, the delivery price list, and package codes.',
+  body: 'Reference information for your shop: every branch with the areas it covers and its phone number, the delivery price list, and package codes.',
 };
 
 const AVATAR_COLORS = ['#4666E5', '#E91E63', '#0EA5E9', '#F59E0B', '#10B981', '#8B5CF6'];
@@ -43,6 +44,8 @@ function groupByLetter(branches: Branch[]) {
 }
 
 export default function ResourcesScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const [tab, setTab] = useState<Tab>('branches');
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState('');
@@ -90,7 +93,7 @@ export default function ResourcesScreen() {
           ListHeaderComponent={
             <View style={styles.search}>
               <SearchCountBar
-                icon={<OfficeIcon size={18} color={C.red} />}
+                icon={<OfficeIcon size={18} color={C.primary} />}
                 label={`${branches.length} ${branches.length === 1 ? 'Branch' : 'Branches'}`}
                 searching={searching}
                 onToggleSearch={() => {
@@ -100,7 +103,7 @@ export default function ResourcesScreen() {
                 query={query}
                 onQueryChange={setQuery}
                 placeholder="Branch, municipality or district"
-                searchIconColor={C.red}
+                searchIconColor={C.primary}
               />
             </View>
           }
@@ -109,7 +112,7 @@ export default function ResourcesScreen() {
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           ListEmptyComponent={
             <EmptyState
-              icon={<OfficeIcon size={30} color={C.red} />}
+              icon={<OfficeIcon size={30} color={C.primary} />}
               title="No branches found"
               message="Try a different branch, municipality or district name."
             />
@@ -117,7 +120,7 @@ export default function ResourcesScreen() {
         />
       ) : (
         <EmptyState
-          icon={tab === 'prices' ? <PriceTagIcon size={30} color={C.red} /> : <ArchiveIcon size={30} color={C.red} />}
+          icon={tab === 'prices' ? <PriceTagIcon size={30} color={C.primary} /> : <ArchiveIcon size={30} color={C.primary} />}
           title={tab === 'prices' ? 'Price list coming soon' : 'Package codes coming soon'}
           message={
             tab === 'prices'
@@ -131,6 +134,8 @@ export default function ResourcesScreen() {
 }
 
 function BranchCard({ branch }: { branch: Branch }) {
+  const styles = useStyles();
+  const C = useColors();
   const region = branchRegion(branch);
   return (
     <Card style={styles.card}>
@@ -187,6 +192,7 @@ function InfoRow({
   small?: boolean;
   onPress?: () => void;
 }) {
+  const styles = useStyles();
   const content = (
     <>
       <IconTile bg={tint} size={32} radius={9}>
@@ -211,8 +217,8 @@ function InfoRow({
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#F8F9FB' },
+const useStyles = makeStyles(({ colors: C }) => ({
+  screen: { flex: 1, backgroundColor: C.screenBg },
   chips: { paddingHorizontal: 12, paddingTop: 14, paddingBottom: 8, gap: 10 },
   list: { paddingHorizontal: 12, paddingBottom: 40 },
   search: { paddingTop: 6, paddingBottom: 4 },
@@ -230,4 +236,4 @@ const styles = StyleSheet.create({
   infoLabel: { fontSize: 12, color: C.faint },
   infoValue: { fontSize: 13, fontWeight: '500', color: C.textStrong, marginTop: 3, letterSpacing: 0.2 },
   infoValueSmall: { fontSize: 12, lineHeight: 19, color: '#374151', textTransform: 'uppercase' },
-});
+}));

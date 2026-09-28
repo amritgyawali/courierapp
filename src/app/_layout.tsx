@@ -7,12 +7,18 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AppStateProvider, useAppState } from '@/state/app-state';
+import { BrandingProvider, useBranding } from '@/state/branding-state';
 import { OpsStateProvider } from '@/state/ops-state';
+import { ThemeProvider, useColors, useFontsReady } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
 
 function RootNavigator() {
-  const { ready, user } = useAppState();
+  const { ready: appReady, user } = useAppState();
+  const { ready: brandingReady } = useBranding();
+  const fontsReady = useFontsReady();
+  const C = useColors();
+  const ready = appReady && brandingReady && fontsReady;
   const role = user?.role;
 
   useEffect(() => {
@@ -26,7 +32,7 @@ function RootNavigator() {
   // (tabs) → Track, vendors on the vendor Dashboard, riders on the rider Home, admins on the
   // admin Dashboard, and signing out lands on Login.
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#FFFFFF' } }}>
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.card } }}>
       <Stack.Protected guard={role === 'customer'}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="account-details" />
@@ -68,12 +74,16 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <AppStateProvider>
-          <OpsStateProvider>
-            <StatusBar style="dark" />
-            <RootNavigator />
-          </OpsStateProvider>
-        </AppStateProvider>
+        <BrandingProvider>
+          <ThemeProvider>
+            <AppStateProvider>
+              <OpsStateProvider>
+                <StatusBar style="dark" />
+                <RootNavigator />
+              </OpsStateProvider>
+            </AppStateProvider>
+          </ThemeProvider>
+        </BrandingProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

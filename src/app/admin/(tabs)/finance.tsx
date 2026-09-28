@@ -1,16 +1,19 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, ScrollView, View } from 'react-native';
 
 import { useAdmin } from '@/components/admin/use-admin';
 import { BankIcon, CashIcon, CoinsIcon, ReceiptIcon, StoreSmallIcon, TrendUpIcon, WalletIcon } from '@/components/portal/icons';
 import { Badge, Card, Chip, EmptyState, PortalHeader } from '@/components/portal/ui';
 import { Avatar, BarChart, Button, Sheet, StatTile, TextField, useToast } from '@/components/portal/widgets';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { dailyVolume, deliveredOn, financeSummary, type Payout } from '@/data/ops';
+import { makeStyles, useColors } from '@/theme';
 import { formatDate, formatDateTime, formatRs, formatShortDate, timeAgo } from '@/utils/format';
+import { oneOf } from '@/utils/params';
 
-type Tab = 'overview' | 'deposits' | 'payouts';
+const TABS = ['overview', 'deposits', 'payouts'] as const;
+type Tab = (typeof TABS)[number];
 
 const INFO = {
   title: 'Finance & COD',
@@ -18,14 +21,16 @@ const INFO = {
 };
 
 export default function FinanceScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const params = useLocalSearchParams<{ tab?: string }>();
   const { data, dispatch, actor, lookup } = useAdmin();
   const toast = useToast();
-  const [tab, setTab] = useState<Tab>((params.tab as Tab) ?? 'overview');
+  const [tab, setTab] = useState<Tab>(oneOf(params.tab, TABS, 'overview'));
   const [seen, setSeen] = useState(params.tab);
   if (params.tab !== seen) {
     setSeen(params.tab);
-    if (params.tab) setTab(params.tab as Tab);
+    if (params.tab) setTab(oneOf(params.tab, TABS, 'overview'));
   }
   const [paying, setPaying] = useState<Payout | null>(null);
   const [reference, setReference] = useState('');
@@ -73,8 +78,8 @@ export default function FinanceScreen() {
               onPress={() => setTab('deposits')}
             />
             <StatTile
-              icon={<BankIcon size={20} color={C.red} />}
-              tint={C.redSoft}
+              icon={<BankIcon size={20} color={C.primary} />}
+              tint={C.primarySoft}
               value={formatRs(f.payoutsPendingAmount)}
               label="Payouts due"
               note={`${formatRs(f.paidOut)} paid so far`}
@@ -151,7 +156,7 @@ export default function FinanceScreen() {
               </Card>
             );
           }}
-          ListEmptyComponent={<EmptyState icon={<WalletIcon size={30} color={C.red} />} title="No deposits yet" message="Rider cash deposits will appear here." />}
+          ListEmptyComponent={<EmptyState icon={<WalletIcon size={30} color={C.primary} />} title="No deposits yet" message="Rider cash deposits will appear here." />}
         />
       )}
 
@@ -166,7 +171,7 @@ export default function FinanceScreen() {
               <Card style={styles.card}>
                 <View style={styles.head}>
                   <View style={styles.merchantIcon}>
-                    <StoreSmallIcon size={20} color={C.red} />
+                    <StoreSmallIcon size={20} color={C.primary} />
                   </View>
                   <View style={styles.flex}>
                     <Text style={styles.title}>{m?.name ?? p.merchantId}</Text>
@@ -189,7 +194,7 @@ export default function FinanceScreen() {
               </Card>
             );
           }}
-          ListEmptyComponent={<EmptyState icon={<BankIcon size={30} color={C.red} />} title="No payouts" message="Weekly merchant settlements appear here." />}
+          ListEmptyComponent={<EmptyState icon={<BankIcon size={30} color={C.primary} />} title="No payouts" message="Weekly merchant settlements appear here." />}
         />
       )}
 
@@ -212,7 +217,7 @@ export default function FinanceScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   flex2: { flex: 2 },
   screen: { flex: 1, backgroundColor: C.screenBg },
@@ -229,5 +234,5 @@ const styles = StyleSheet.create({
   amount: { fontSize: 16, fontWeight: '800', color: C.textStrong },
   actions: { flexDirection: 'row', gap: 10 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  merchantIcon: { width: 42, height: 42, borderRadius: 12, backgroundColor: C.redTint, alignItems: 'center', justifyContent: 'center' },
-});
+  merchantIcon: { width: 42, height: 42, borderRadius: 12, backgroundColor: C.primaryTint, alignItems: 'center', justifyContent: 'center' },
+}));

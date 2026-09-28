@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { type ReactNode, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import {
   CalendarFilledIcon,
@@ -17,9 +17,10 @@ import {
   UndoFilledIcon,
 } from '@/components/portal/icons';
 import { HeaderIconButton, IconTile, InfoSheet, SectionHeading, PortalFab, PortalHeader } from '@/components/portal/ui';
-import { shadow, PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { dashboardSummary } from '@/data/vendor';
 import { useVendorState } from '@/state/vendor-state';
+import { makeStyles, shadow, useColors } from '@/theme';
 import { formatRs, greeting, initials, isSameDay } from '@/utils/format';
 
 const NEW_ORDER_INFO = {
@@ -28,6 +29,8 @@ const NEW_ORDER_INFO = {
 };
 
 export default function DashboardScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const { profile, orders, comments, isCommentRead } = useVendorState();
   const [newOrderInfo, setNewOrderInfo] = useState(false);
 
@@ -71,7 +74,7 @@ export default function DashboardScreen() {
             onPress={() => router.navigate('/vendor/orders')}
           />
           <StatCard
-            color={C.green}
+            color={C.success}
             icon={<TruckIcon size={20} color="#FFFFFF" />}
             value={summary.deliveredOrders}
             label="Delivered Orders"
@@ -80,7 +83,7 @@ export default function DashboardScreen() {
         </View>
 
         {/* Order values */}
-        <SectionHeading icon={<DocumentLinesIcon size={20} color={C.red} />} title="Order Values" />
+        <SectionHeading icon={<DocumentLinesIcon size={20} color={C.primary} />} title="Order Values" />
         <View style={styles.row}>
           <ValueCard
             icon={<ShoppingBagFilledIcon size={20} color={C.blue} />}
@@ -115,7 +118,7 @@ export default function DashboardScreen() {
         </View>
 
         {/* Today's activities */}
-        <SectionHeading icon={<CalendarFilledIcon size={20} color={C.red} />} title="Today's Activities" />
+        <SectionHeading icon={<CalendarFilledIcon size={20} color={C.primary} />} title="Today's Activities" />
         <ActivityRow
           icon={<ChatFilledIcon size={17} color="#0284C7" />}
           tint="#E0F2FE"
@@ -154,6 +157,7 @@ function StatCard({
   label: string;
   onPress: () => void;
 }) {
+  const styles = useStyles();
   return (
     <Pressable
       accessibilityRole="button"
@@ -185,6 +189,7 @@ function ValueCard({
   value: number;
   color: string;
 }) {
+  const styles = useStyles();
   return (
     <View style={styles.valueCard} accessible accessibilityLabel={`${label}: ${formatRs(value)}`}>
       <IconTile bg={tint} size={42} radius={10}>
@@ -213,6 +218,8 @@ function ActivityRow({
   chevron?: boolean;
   onPress: () => void;
 }) {
+  const styles = useStyles();
+  const C = useColors();
   return (
     <Pressable
       accessibilityRole="button"
@@ -231,60 +238,61 @@ function ActivityRow({
   );
 }
 
-const cardSurface = {
-  backgroundColor: C.card,
-  borderRadius: 14,
-  borderWidth: 1,
-  borderColor: C.cardBorder,
-  boxShadow: shadow(1, 6, 0.06),
-};
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: C.screenBg },
-  content: { padding: 14, gap: 14, paddingBottom: 100 },
-  greeting: {
-    backgroundColor: C.red,
+const useStyles = makeStyles(({ colors: C }) => {
+  const cardSurface = {
+    backgroundColor: C.card,
     borderRadius: 14,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    boxShadow: shadow(1, 4, 0.1),
-  },
-  avatar: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: 'rgba(255,255,255,0.2)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: { color: '#FFFFFF', fontSize: 19, fontWeight: '700', letterSpacing: 1 },
-  greetingText: { flex: 1 },
-  greetingTitle: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
-  greetingName: { color: '#FFFFFF', fontSize: 15, fontWeight: '700', marginTop: 2, opacity: 0.97 },
-  greetingId: { color: '#FFFFFF', fontSize: 13, marginTop: 2, opacity: 0.92 },
-  row: { flexDirection: 'row', gap: 12 },
-  statCard: { flex: 1, height: 100, borderRadius: 14, padding: 14, justifyContent: 'space-between', boxShadow: shadow(1, 4, 0.1) },
-  statTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  statIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  statValue: { color: '#FFFFFF', fontSize: 19, fontWeight: '700' },
-  statBottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  statLabel: { color: '#FFFFFF', fontSize: 13, fontWeight: '500' },
-  valueCard: { ...cardSurface, flex: 1, alignItems: 'center', paddingVertical: 18, paddingHorizontal: 10 },
-  valueLabel: { fontSize: 13, color: C.muted, fontWeight: '500', marginTop: 10 },
-  valueAmount: { fontSize: 15, fontWeight: '700', marginTop: 4 },
-  activity: { ...cardSurface, flexDirection: 'row', alignItems: 'center', gap: 14, padding: 14 },
-  activityText: { flex: 1 },
-  activityTitle: { fontSize: 14, fontWeight: '600', color: C.textStrong },
-  activityCount: { fontSize: 14, fontWeight: '700', marginTop: 2 },
+    borderColor: C.cardBorder,
+    boxShadow: shadow(1, 6, 0.06),
+  };
+  return {
+    screen: { flex: 1, backgroundColor: C.screenBg },
+    content: { padding: 14, gap: 14, paddingBottom: 100 },
+    greeting: {
+      backgroundColor: C.primary,
+      borderRadius: 14,
+      padding: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 14,
+      boxShadow: shadow(1, 4, 0.1),
+    },
+    avatar: {
+      width: 54,
+      height: 54,
+      borderRadius: 27,
+      backgroundColor: 'rgba(255,255,255,0.2)',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.3)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    avatarText: { color: '#FFFFFF', fontSize: 19, fontWeight: '700', letterSpacing: 1 },
+    greetingText: { flex: 1 },
+    greetingTitle: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
+    greetingName: { color: '#FFFFFF', fontSize: 15, fontWeight: '700', marginTop: 2, opacity: 0.97 },
+    greetingId: { color: '#FFFFFF', fontSize: 13, marginTop: 2, opacity: 0.92 },
+    row: { flexDirection: 'row', gap: 12 },
+    statCard: { flex: 1, height: 100, borderRadius: 14, padding: 14, justifyContent: 'space-between', boxShadow: shadow(1, 4, 0.1) },
+    statTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+    statIcon: {
+      width: 34,
+      height: 34,
+      borderRadius: 8,
+      backgroundColor: 'rgba(255,255,255,0.2)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    statValue: { color: '#FFFFFF', fontSize: 19, fontWeight: '700' },
+    statBottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    statLabel: { color: '#FFFFFF', fontSize: 13, fontWeight: '500' },
+    valueCard: { ...cardSurface, flex: 1, alignItems: 'center', paddingVertical: 18, paddingHorizontal: 10 },
+    valueLabel: { fontSize: 13, color: C.muted, fontWeight: '500', marginTop: 10 },
+    valueAmount: { fontSize: 15, fontWeight: '700', marginTop: 4 },
+    activity: { ...cardSurface, flexDirection: 'row', alignItems: 'center', gap: 14, padding: 14 },
+    activityText: { flex: 1 },
+    activityTitle: { fontSize: 14, fontWeight: '600', color: C.textStrong },
+    activityCount: { fontSize: 14, fontWeight: '700', marginTop: 2 },
+  };
 });

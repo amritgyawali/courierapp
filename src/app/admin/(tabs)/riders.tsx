@@ -1,14 +1,16 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, View } from 'react-native';
 
 import { useAdmin } from '@/components/admin/use-admin';
 import { BikeIcon, MapIcon } from '@/components/portal/icons';
 import { Badge, Card, Chip, EmptyState, HeaderIconButton, PortalHeader, SearchCountBar } from '@/components/portal/ui';
 import { Avatar, ProgressBar } from '@/components/portal/widgets';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { DUTY_META, KYC_META, type Rider, riderStats } from '@/data/ops';
+import { makeStyles, useColors } from '@/theme';
 import { formatRs } from '@/utils/format';
+import { oneOf } from '@/utils/params';
 
 type Filter = 'all' | 'online' | 'break' | 'offline' | 'kyc' | 'suspended';
 
@@ -21,25 +23,29 @@ const FILTERS: { key: Filter; label: string; test: (r: Rider) => boolean }[] = [
   { key: 'suspended', label: 'Suspended', test: (r) => !r.active },
 ];
 
+const FILTER_KEYS = FILTERS.map((f) => f.key);
+
 const INFO = {
   title: 'Fleet',
   body: 'Every rider with live duty status, workload, delivery success rate and the cash they are holding. Tap a rider to review KYC, suspend them or see their tasks. Use the map button for the live fleet map.',
 };
 
 export default function RidersScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const params = useLocalSearchParams<{ filter?: string }>();
   const { data, lookup } = useAdmin();
-  const [filter, setFilter] = useState<Filter>((params.filter as Filter) ?? 'all');
+  const [filter, setFilter] = useState<Filter>(oneOf(params.filter, FILTER_KEYS, 'all'));
   const [seen, setSeen] = useState(params.filter);
   if (params.filter !== seen) {
     setSeen(params.filter);
-    if (params.filter) setFilter(params.filter as Filter);
+    if (params.filter) setFilter(oneOf(params.filter, FILTER_KEYS, 'all'));
   }
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState('');
 
   const q = query.trim().toLowerCase();
-  const test = FILTERS.find((f) => f.key === filter)!.test;
+  const test = (FILTERS.find((f) => f.key === filter) ?? FILTERS[0]).test;
   const list = data.riders
     .filter((r) => test(r) && (!q || r.name.toLowerCase().includes(q) || r.phone.includes(q) || r.vehicle.plate.toLowerCase().includes(q)))
     .map((r) => ({ rider: r, stats: riderStats(data, r.id) }))
@@ -67,7 +73,7 @@ export default function RidersScreen() {
 
       <View style={styles.toolbar}>
         <SearchCountBar
-          icon={<BikeIcon size={19} color={C.red} />}
+          icon={<BikeIcon size={19} color={C.primary} />}
           label={`${list.length} rider${list.length === 1 ? '' : 's'}`}
           searching={searching}
           onToggleSearch={() => {
@@ -127,13 +133,14 @@ export default function RidersScreen() {
             </Pressable>
           );
         }}
-        ListEmptyComponent={<EmptyState icon={<BikeIcon size={30} color={C.red} />} title="No riders here" message="Try another filter or search." />}
+        ListEmptyComponent={<EmptyState icon={<BikeIcon size={30} color={C.primary} />} title="No riders here" message="Try another filter or search." />}
       />
     </View>
   );
 }
 
 function Stat({ label, value, color }: { label: string; value: string | number; color?: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.stat}>
       <Text style={[styles.statValue, color ? { color } : null]}>{value}</Text>
@@ -142,7 +149,7 @@ function Stat({ label, value, color }: { label: string; value: string | number; 
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   pressed: { opacity: 0.85 },
   screen: { flex: 1, backgroundColor: C.screenBg },
@@ -163,4 +170,4 @@ const styles = StyleSheet.create({
   cashTop: { flexDirection: 'row', justifyContent: 'space-between' },
   cashLabel: { fontSize: 12, color: C.muted },
   cashValue: { fontSize: 12, fontWeight: '700', color: C.text },
-});
+}));

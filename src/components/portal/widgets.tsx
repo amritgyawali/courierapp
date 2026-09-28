@@ -8,8 +8,6 @@ import {
   ScrollView,
   type StyleProp,
   StyleSheet,
-  Text,
-  TextInput,
   type TextInputProps,
   View,
   type ViewStyle,
@@ -19,7 +17,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, G, Rect, Text as SvgText } from 'react-native-svg';
 
 import { CheckIcon, ChevronRightIcon, CloseIcon, InfoFilledIcon } from '@/components/portal/icons';
-import { PortalColors as C, shadow } from '@/constants/theme';
+import { Text, TextInput } from '@/components/text';
+import { makeStyles, type Palette, shadow, useColors, useTheme } from '@/theme';
 
 // ---------------------------------------------------------------------------
 // Bottom sheet
@@ -41,6 +40,8 @@ export function Sheet({
   children: ReactNode;
   footer?: ReactNode;
 }) {
+  const C = useColors();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -74,14 +75,17 @@ export function Sheet({
 
 type ButtonVariant = 'primary' | 'outline' | 'soft' | 'success' | 'danger' | 'ghost';
 
-const BUTTON: Record<ButtonVariant, { bg: string; pressed: string; text: string; border?: string }> = {
-  primary: { bg: C.red, pressed: C.redPressed, text: '#FFFFFF' },
-  outline: { bg: '#FFFFFF', pressed: C.redTint, text: C.red, border: '#F4C8D2' },
-  soft: { bg: C.redTint, pressed: '#FBE3E8', text: C.red, border: '#F9D7DE' },
-  success: { bg: '#16A34A', pressed: '#15803D', text: '#FFFFFF' },
-  danger: { bg: '#FFFFFF', pressed: '#FEF2F2', text: '#B91C1C', border: '#FECACA' },
-  ghost: { bg: '#F3F4F6', pressed: '#E5E7EB', text: C.text },
-};
+type ButtonTone = { bg: string; pressed: string; text: string; border?: string };
+
+const buttonTone = (C: Palette, variant: ButtonVariant): ButtonTone =>
+  ({
+    primary: { bg: C.primary, pressed: C.primaryPressed, text: C.onPrimary },
+    outline: { bg: C.card, pressed: C.primaryTint, text: C.primary, border: C.primaryBorder },
+    soft: { bg: C.primaryTint, pressed: C.primarySoft, text: C.primary, border: C.primarySoft },
+    success: { bg: C.success, pressed: C.successStrong, text: '#FFFFFF' },
+    danger: { bg: C.card, pressed: '#FEF2F2', text: C.dangerStrong, border: C.dangerBorder },
+    ghost: { bg: '#F3F4F6', pressed: C.border, text: C.text },
+  })[variant];
 
 export function Button({
   title,
@@ -102,7 +106,9 @@ export function Button({
   style?: StyleProp<ViewStyle>;
   compact?: boolean;
 }) {
-  const v = BUTTON[variant];
+  const styles = useStyles();
+  const C = useColors();
+  const v = buttonTone(C, variant);
   return (
     <Pressable
       accessibilityRole="button"
@@ -127,8 +133,8 @@ export function Button({
 // Identity
 // ---------------------------------------------------------------------------
 
-/** SVG text defaults to a serif face on web; match the app's system font. */
-const SVG_FONT = Platform.select({ web: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', default: undefined });
+/** SVG text defaults to a serif face on web; fall back to the system UI font there. */
+const SVG_FALLBACK_FONT = Platform.select({ web: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', default: undefined });
 
 const AVATAR_COLORS = ['#4666E5', '#E91E63', '#0EA5E9', '#F59E0B', '#10B981', '#8B5CF6', '#C0143C', '#0F766E'];
 
@@ -139,6 +145,7 @@ export function avatarColor(seed: string) {
 }
 
 export function Avatar({ name, size = 44, status }: { name: string; size?: number; status?: string }) {
+  const styles = useStyles();
   const parts = name.trim().split(/\s+/);
   const letters = (parts[0]?.[0] ?? '') + (parts.length > 1 ? parts[parts.length - 1][0] : (parts[0]?.[1] ?? ''));
   return (
@@ -164,7 +171,7 @@ export function ProgressRing({
   value,
   size = 96,
   stroke = 10,
-  color = C.green,
+  color: colorProp,
   label,
 }: {
   value: number;
@@ -173,6 +180,9 @@ export function ProgressRing({
   color?: string;
   label?: string;
 }) {
+  const C = useColors();
+  const styles = useStyles();
+  const color = colorProp ?? C.success;
   const r = (size - stroke) / 2;
   const circumference = 2 * Math.PI * r;
   const clamped = Math.max(0, Math.min(100, value));
@@ -205,7 +215,7 @@ export type BarDatum = { label: string; values: number[]; highlight?: boolean };
 /** Grouped bar chart (one or two series) drawn with SVG. */
 export function BarChart({
   data,
-  colors = [C.red, '#F4A3B4'],
+  colors: colorsProp,
   height = 150,
   legend,
 }: {
@@ -214,6 +224,9 @@ export function BarChart({
   height?: number;
   legend?: string[];
 }) {
+  const { colors: C, fonts } = useTheme();
+  const styles = useStyles();
+  const colors = colorsProp ?? [C.primary, C.primaryMuted];
   const [width, setWidth] = useState(0);
   const max = Math.max(1, ...data.flatMap((d) => d.values));
   const series = Math.max(1, ...data.map((d) => d.values.length));
@@ -255,8 +268,8 @@ export function BarChart({
                     x={i * slot + slot / 2}
                     y={valueH + plotH - (Math.max(...d.values) / max) * plotH - 4}
                     fontSize={10}
-                    fontFamily={SVG_FONT}
-                    fontWeight="700"
+                    fontFamily={fonts.face('700') ?? SVG_FALLBACK_FONT}
+                    fontWeight={fonts.face('700') ? 'normal' : '700'}
                     fill="#475569"
                     textAnchor="middle">
                     {Math.max(...d.values)}
@@ -265,9 +278,9 @@ export function BarChart({
                     x={i * slot + slot / 2}
                     y={height - 4}
                     fontSize={10}
-                    fontFamily={SVG_FONT}
-                    fontWeight={d.highlight ? '700' : '500'}
-                    fill={d.highlight ? C.red : '#6B7280'}
+                    fontFamily={fonts.face(d.highlight ? '700' : '500') ?? SVG_FALLBACK_FONT}
+                    fontWeight={fonts.face('700') ? 'normal' : d.highlight ? '700' : '500'}
+                    fill={d.highlight ? C.primary : '#6B7280'}
                     textAnchor="middle">
                     {d.label}
                   </SvgText>
@@ -291,7 +304,19 @@ export function BarChart({
   );
 }
 
-export function ProgressBar({ value, color = C.red, track = '#F1F2F4', height = 8 }: { value: number; color?: string; track?: string; height?: number }) {
+export function ProgressBar({
+  value,
+  color: colorProp,
+  track = '#F1F2F4',
+  height = 8,
+}: {
+  value: number;
+  color?: string;
+  track?: string;
+  height?: number;
+}) {
+  const C = useColors();
+  const color = colorProp ?? C.primary;
   const clamped = Math.max(0, Math.min(100, value));
   return (
     <View style={{ height, borderRadius: height / 2, backgroundColor: track, overflow: 'hidden' }}>
@@ -305,6 +330,7 @@ export function ProgressBar({ value, color = C.red, track = '#F1F2F4', height = 
 // ---------------------------------------------------------------------------
 
 export function KeyValue({ label, value, valueColor, bold }: { label: string; value: string; valueColor?: string; bold?: boolean }) {
+  const styles = useStyles();
   return (
     <View style={styles.kv}>
       <Text style={styles.kvLabel}>{label}</Text>
@@ -330,6 +356,8 @@ export function ListRow({
   onPress?: () => void;
   chevron?: boolean;
 }) {
+  const styles = useStyles();
+  const C = useColors();
   const content = (
     <>
       {icon}
@@ -357,6 +385,8 @@ export function ListRow({
 }
 
 export function TextField({ label, hint, error, style, ...input }: { label: string; hint?: string; error?: string } & TextInputProps) {
+  const styles = useStyles();
+  const C = useColors();
   const [focused, setFocused] = useState(false);
   return (
     <View style={styles.field}>
@@ -379,8 +409,9 @@ export function TextField({ label, hint, error, style, ...input }: { label: stri
   );
 }
 
-/** Accessible on/off switch in the portal's crimson. */
+/** Accessible on/off switch in the brand colour. */
 export function Toggle({ value, onChange, label }: { value: boolean; onChange: (v: boolean) => void; label: string }) {
+  const styles = useStyles();
   return (
     <Pressable
       role="switch"
@@ -401,7 +432,7 @@ export function StatTile({
   value,
   label,
   note,
-  noteColor = C.muted,
+  noteColor,
   onPress,
 }: {
   icon: ReactNode;
@@ -412,6 +443,8 @@ export function StatTile({
   noteColor?: string;
   onPress?: () => void;
 }) {
+  const C = useColors();
+  const styles = useStyles();
   const body = (
     <>
       <View style={styles.statTop}>
@@ -424,7 +457,7 @@ export function StatTile({
         {label}
       </Text>
       {note && (
-        <Text style={[styles.statNote, { color: noteColor }]} numberOfLines={1}>
+        <Text style={[styles.statNote, { color: noteColor ?? C.muted }]} numberOfLines={1}>
           {note}
         </Text>
       )}
@@ -462,6 +495,7 @@ export function useToast() {
 
 /** Stacks short confirmations ("Parcel delivered") above the tab bar. */
 export function ToastProvider({ children }: { children: ReactNode }) {
+  const styles = useStyles();
   const [items, setItems] = useState<ToastItem[]>([]);
   const counter = useRef(0);
   const insets = useSafeAreaInsets();
@@ -505,10 +539,10 @@ export function useNow(ms = 30000) {
 
 // ---------------------------------------------------------------------------
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   disabled: { opacity: 0.5 },
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+  backdrop: { flex: 1, backgroundColor: C.overlay, justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 22,
@@ -538,7 +572,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   buttonCompact: { minHeight: 38, borderRadius: 10, paddingHorizontal: 12 },
-  buttonShadow: { boxShadow: shadow(2, 8, 0.18, C.red) },
+  buttonShadow: { boxShadow: shadow(2, 8, 0.18, C.primary) },
   buttonText: { fontSize: 15, fontWeight: '700' },
   buttonTextCompact: { fontSize: 13 },
   avatar: { alignItems: 'center', justifyContent: 'center' },
@@ -570,13 +604,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     outlineWidth: 0,
   },
-  inputFocused: { borderColor: C.red },
-  inputError: { borderColor: '#EF4444' },
+  inputFocused: { borderColor: C.primary },
+  inputError: { borderColor: C.danger },
   inputMultiline: { minHeight: 90, textAlignVertical: 'top' },
   fieldHint: { fontSize: 12, color: C.muted },
-  fieldError: { color: '#DC2626' },
+  fieldError: { color: C.danger },
   toggle: { width: 46, height: 28, borderRadius: 14, backgroundColor: '#D1D5DB', padding: 3, justifyContent: 'center' },
-  toggleOn: { backgroundColor: C.red },
+  toggleOn: { backgroundColor: C.primary },
   knob: { width: 22, height: 22, borderRadius: 11, backgroundColor: '#FFFFFF', boxShadow: shadow(1, 3, 0.2) },
   knobOn: { alignSelf: 'flex-end' },
   stat: {
@@ -608,4 +642,4 @@ const styles = StyleSheet.create({
   toast_info: { backgroundColor: '#1F2937' },
   toast_error: { backgroundColor: '#B91C1C' },
   toastText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600', flexShrink: 1 },
-});
+}));

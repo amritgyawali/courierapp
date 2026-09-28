@@ -1,6 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, type ReactNode, useContext, useMemo } from 'react';
 
+import { LEGACY_NAMES } from '@/constants/identity';
 import {
   SAMPLE_COMMENTS,
   SAMPLE_ORDERS,
@@ -11,6 +11,8 @@ import {
   type VendorPayment,
   type VendorProfile,
 } from '@/data/vendor';
+import { isRecord, nonEmptyOr, stringOr, usePersistedState } from '@/state/persist';
+import { generateVendorId } from '@/utils/id';
 
 const STORAGE_KEY = 'ksg-vendor-state-v1';
 
@@ -23,34 +25,41 @@ type VendorState = PersistedVendorState & {
   comments: VendorComment[];
   isCommentRead: (id: string) => boolean;
   markCommentRead: (id: string) => void;
-  updateProfile: (changes: Partial<VendorProfile>) => void;
+  updateProfile: (changes: Partial<Omit<VendorProfile, 'vendorId'>>) => void;
 };
 
 const VendorStateContext = createContext<VendorState | null>(null);
 
-const initialState: PersistedVendorState = { profile: SAMPLE_PROFILE, readCommentIds: [] };
+const freshState = (): PersistedVendorState => ({
+  profile: { ...SAMPLE_PROFILE, vendorId: generateVendorId() },
+  readCommentIds: [],
+});
+
+/**
+ * Restores saved vendor data. Installs from earlier builds are migrated: the old sample shop
+ * name becomes the current demo name and the shared sample ID `16500` gets a random ID.
+ */
+function hydrate(saved: unknown): PersistedVendorState {
+  if (!isRecord(saved)) return freshState();
+  const p = isRecord(saved.profile) ? saved.profile : {};
+  const savedId = stringOr(p.vendorId, '');
+  const savedName = nonEmptyOr(p.businessName, SAMPLE_PROFILE.businessName);
+  return {
+    profile: {
+      businessName: savedName === LEGACY_NAMES.vendorBusiness ? SAMPLE_PROFILE.businessName : savedName,
+      ownerName: nonEmptyOr(p.ownerName, SAMPLE_PROFILE.ownerName),
+      vendorId: /^\d{5,8}$/.test(savedId) && savedId !== LEGACY_NAMES.vendorId ? savedId : generateVendorId(),
+      phone: nonEmptyOr(p.phone, SAMPLE_PROFILE.phone),
+      address: stringOr(p.address, SAMPLE_PROFILE.address),
+    },
+    readCommentIds: Array.isArray(saved.readCommentIds)
+      ? saved.readCommentIds.filter((id): id is string => typeof id === 'string')
+      : [],
+  };
+}
 
 export function VendorStateProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState(initialState);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((raw) => {
-        if (!raw) return;
-        const saved = JSON.parse(raw) as Partial<PersistedVendorState>;
-        setState({
-          profile: { ...SAMPLE_PROFILE, ...saved.profile },
-          readCommentIds: Array.isArray(saved.readCommentIds) ? saved.readCommentIds : [],
-        });
-      })
-      .catch(() => {})
-      .finally(() => setReady(true));
-  }, []);
-
-  useEffect(() => {
-    if (ready) AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state)).catch(() => {});
-  }, [state, ready]);
+  const [state, setState, ready] = usePersistedState(STORAGE_KEY, freshState, { hydrate });
 
   const value = useMemo<VendorState>(() => {
     const read = new Set(state.readCommentIds);
@@ -64,7 +73,7 @@ export function VendorStateProvider({ children }: { children: ReactNode }) {
         setState((s) => (s.readCommentIds.includes(id) ? s : { ...s, readCommentIds: [...s.readCommentIds, id] })),
       updateProfile: (changes) => setState((s) => ({ ...s, profile: { ...s.profile, ...changes } })),
     };
-  }, [state]);
+  }, [state, setState]);
 
   // Wait for saved read-state so already-closed comments never flash as unclosed.
   if (!ready) return null;

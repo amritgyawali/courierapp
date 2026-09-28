@@ -3,9 +3,10 @@ import { Tabs } from 'expo-router';
 import { CubeIcon, HomeIcon, MapIcon, UserCircleIcon, WalletIcon } from '@/components/portal/icons';
 import { PortalTabBar, type PortalTab } from '@/components/portal/tab-bar';
 import { useRider } from '@/components/rider/use-rider';
-import { PortalColors as C } from '@/constants/theme';
+import { useColors } from '@/theme';
 
 export default function RiderTabsLayout() {
+  const C = useColors();
   const { stats } = useRider();
 
   const tabs: Record<string, PortalTab> = {

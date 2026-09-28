@@ -1,12 +1,14 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
+import { Text } from '@/components/text';
 import { Button, Checkbox, ScreenHeader } from '@/components/ui';
-import { Colors, shadow } from '@/constants/theme';
 import { useAppState } from '@/state/app-state';
+import { makeStyles, shadow } from '@/theme';
 
 function OptionCard({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  const styles = useStyles();
   return (
     <Pressable
       accessibilityRole="checkbox"
@@ -20,6 +22,7 @@ function OptionCard({ label, checked, onChange }: { label: string; checked: bool
 }
 
 export default function NotifyScreen() {
+  const styles = useStyles();
   const { notify, saveNotify } = useAppState();
   const [email, setEmail] = useState(notify.email);
   const [phone, setPhone] = useState(notify.phone);
@@ -50,8 +53,8 @@ export default function NotifyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#EAEAEA' },
+const useStyles = makeStyles(({ colors: C }) => ({
+  screen: { flex: 1, backgroundColor: C.screenBg },
   content: { paddingHorizontal: 16, paddingTop: 24 },
   subtitle: { fontSize: 16, color: '#1F2937', textAlign: 'center', marginBottom: 24 },
   option: {
@@ -64,5 +67,5 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     boxShadow: shadow(1, 6, 0.06),
   },
-  optionLabel: { fontSize: 17, fontWeight: '700', color: Colors.black },
-});
+  optionLabel: { fontSize: 17, fontWeight: '700', color: C.textStrong },
+}));

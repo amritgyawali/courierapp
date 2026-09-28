@@ -1,13 +1,14 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DoorIcon, SmallChevronDownIcon } from '@/components/icons';
+import { Text } from '@/components/text';
 import { Button, Checkbox, ScreenHeader, SelectSheet } from '@/components/ui';
-import { Colors, shadow } from '@/constants/theme';
 import { DELIVERY_TIMES, LEAVE_PLACES } from '@/data/content';
 import { useAppState } from '@/state/app-state';
+import { makeStyles, shadow, useColors } from '@/theme';
 
 const TIPS = [
   "We'll only leave parcels that are out of the weather and hidden from view.",
@@ -26,6 +27,7 @@ function DropdownCard({
   value: string;
   onPress: () => void;
 }) {
+  const styles = useStyles();
   return (
     <Pressable accessibilityRole="button" onPress={onPress} style={styles.card}>
       <Text style={styles.dropdownLabel}>{label}</Text>
@@ -38,6 +40,8 @@ function DropdownCard({
 }
 
 export default function DeliveryPreferencesScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const insets = useSafeAreaInsets();
   const { delivery, saveDelivery } = useAppState();
   const [leaveSafe, setLeaveSafe] = useState(delivery.leaveSafe);
@@ -88,7 +92,7 @@ export default function DeliveryPreferencesScreen() {
               setLeaveSafe(v);
               setSaved(false);
             }}
-            borderColor={Colors.red}
+            borderColor={C.primary}
             size={22}
           />
         </Pressable>
@@ -146,8 +150,8 @@ export default function DeliveryPreferencesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#F4F4F4' },
+const useStyles = makeStyles(({ colors: C }) => ({
+  screen: { flex: 1, backgroundColor: C.screenBg },
   content: { padding: 16, gap: 16 },
   card: {
     backgroundColor: '#FFFFFF',
@@ -164,23 +168,23 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: Colors.red,
+    backgroundColor: C.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   infoText: { flex: 1, fontSize: 13.5, lineHeight: 19, fontWeight: '500', color: '#4B5563' },
   hr: { height: 1, backgroundColor: '#E5E7EB' },
   tips: { padding: 16, paddingTop: 14, gap: 10 },
-  tipsTitle: { fontSize: 14, fontWeight: '700', color: Colors.black },
+  tipsTitle: { fontSize: 14, fontWeight: '700', color: C.textStrong },
   tipRow: { flexDirection: 'row', paddingLeft: 4 },
   bullet: { fontSize: 18, lineHeight: 20, color: '#1F2937', marginRight: 10 },
   tipText: { flex: 1, fontSize: 13, lineHeight: 20, color: '#4B5563' },
   notice: { fontSize: 13.5, lineHeight: 19, fontWeight: '500', color: '#1F2937', paddingHorizontal: 4 },
   toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 18 },
-  toggleText: { flex: 1, fontSize: 13.5, lineHeight: 19, fontWeight: '700', color: Colors.black, paddingRight: 16 },
-  dropdownLabel: { fontSize: 14, fontWeight: '700', color: Colors.black, marginBottom: 10 },
+  toggleText: { flex: 1, fontSize: 13.5, lineHeight: 19, fontWeight: '700', color: C.textStrong, paddingRight: 16 },
+  dropdownLabel: { fontSize: 14, fontWeight: '700', color: C.textStrong, marginBottom: 10 },
   dropdownRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   dropdownValue: { fontSize: 14, color: '#9CA3AF' },
-  dropdownValueSet: { color: Colors.black, fontWeight: '500' },
-  footer: { paddingHorizontal: 16, paddingTop: 4, backgroundColor: '#F4F4F4' },
-});
+  dropdownValueSet: { color: C.textStrong, fontWeight: '500' },
+  footer: { paddingHorizontal: 16, paddingTop: 4, backgroundColor: C.screenBg },
+}));

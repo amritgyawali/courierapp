@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, View } from 'react-native';
 
 import { BranchMap } from '@/components/branch-map';
 import { NavigationIcon, RouteIcon } from '@/components/portal/icons';
@@ -8,8 +8,9 @@ import { Badge, EmptyState, HeaderIconButton, PortalHeader } from '@/components/
 import { useNow } from '@/components/portal/widgets';
 import { taskParty } from '@/components/rider/task-card';
 import { useRider } from '@/components/rider/use-rider';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
 import { TASK_META, taskKind } from '@/data/ops';
+import { makeStyles, useColors } from '@/theme';
 import { formatDuration } from '@/utils/format';
 import { navigateRoute } from '@/utils/links';
 
@@ -17,6 +18,8 @@ import { navigateRoute } from '@/utils/links';
 const estimateMs = (km: number, stops: number) => ((km / 22) * 60 + stops * 6) * 60000;
 
 export default function RiderMap() {
+  const styles = useStyles();
+  const C = useColors();
   const now = useNow();
   const { data, me, hub, route } = useRider(now);
   const [focusId, setFocusId] = useState<string | null>(null);
@@ -55,7 +58,7 @@ export default function RiderMap() {
         />
       </View>
       <View style={styles.summary}>
-        <RouteIcon size={20} color={C.red} />
+        <RouteIcon size={20} color={C.primary} />
         <Text style={styles.summaryText}>
           {stops.length} stop{stops.length === 1 ? '' : 's'} · {route.distanceKm.toFixed(1)} km · about {formatDuration(estimateMs(route.distanceKm, stops.length))}
         </Text>
@@ -92,13 +95,13 @@ export default function RiderMap() {
             </Pressable>
           );
         }}
-        ListEmptyComponent={<EmptyState icon={<RouteIcon size={30} color={C.red} />} title="No stops" message="Your route appears here when you have tasks." />}
+        ListEmptyComponent={<EmptyState icon={<RouteIcon size={30} color={C.primary} />} title="No stops" message="Your route appears here when you have tasks." />}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   flex: { flex: 1 },
   screen: { flex: 1, backgroundColor: C.screenBg },
   map: { height: 300, backgroundColor: '#E5ECE0' },
@@ -124,9 +127,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: C.cardBorder,
   },
-  rowActive: { borderColor: C.red },
+  rowActive: { borderColor: C.primary },
   seq: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   seqText: { color: '#FFFFFF', fontWeight: '800', fontSize: 13 },
   name: { fontSize: 14, fontWeight: '700', color: C.textStrong },
   meta: { fontSize: 12, color: C.muted, marginTop: 2 },
-});
+}));

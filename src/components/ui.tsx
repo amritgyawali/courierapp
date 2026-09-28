@@ -6,8 +6,6 @@ import {
   Pressable,
   type StyleProp,
   StyleSheet,
-  Text,
-  TextInput,
   type TextInputProps,
   View,
   type ViewStyle,
@@ -16,7 +14,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrandLogoSmall } from '@/components/brand';
 import { BackArrowIcon, CheckIcon, EyeIcon, EyeSlashIcon, PlusIcon } from '@/components/icons';
-import { Colors, cardShadow, shadow } from '@/constants/theme';
+import { Text, TextInput } from '@/components/text';
+import { cardShadow, makeStyles, shadow, useColors } from '@/theme';
 
 // ---------------------------------------------------------------------------
 // Header
@@ -24,7 +23,7 @@ import { Colors, cardShadow, shadow } from '@/constants/theme';
 
 type HeaderProps = {
   title: string;
-  /** Show the red back arrow. */
+  /** Show the brand-coloured back arrow. */
   back?: boolean;
   /** Replaces the default brand logo on the right. Pass `null` to hide it. */
   right?: ReactNode | null;
@@ -32,6 +31,7 @@ type HeaderProps = {
 };
 
 export function ScreenHeader({ title, back = false, right, compactLogo }: HeaderProps) {
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
@@ -50,7 +50,7 @@ export function ScreenHeader({ title, back = false, right, compactLogo }: Header
           {title}
         </Text>
       </View>
-      {right === undefined ? <BrandLogoSmall compact={compactLogo ?? back} /> : right}
+      <View style={styles.headerRight}>{right === undefined ? <BrandLogoSmall compact={compactLogo ?? back} /> : right}</View>
     </View>
   );
 }
@@ -66,13 +66,15 @@ type IconInputProps = TextInputProps & {
 };
 
 export function IconInput({ icon, secureToggle, containerStyle, style, ...rest }: IconInputProps) {
+  const styles = useStyles();
+  const C = useColors();
   const [hidden, setHidden] = useState(true);
   const [focused, setFocused] = useState(false);
   return (
     <View style={[styles.inputRow, focused && styles.inputRowFocused, containerStyle]}>
       <View style={styles.inputIcon}>{icon}</View>
       <TextInput
-        placeholderTextColor={Colors.placeholder}
+        placeholderTextColor={C.placeholder}
         {...rest}
         style={[styles.input, style]}
         secureTextEntry={secureToggle ? hidden : rest.secureTextEntry}
@@ -122,10 +124,13 @@ export function Button({
   bold = true,
   disabled,
 }: ButtonProps) {
-  const bg =
-    variant === 'primary' ? Colors.red : variant === 'gray' ? Colors.grayButton : Colors.grayButtonSoft;
-  const pressedBg =
-    variant === 'primary' ? Colors.redPressed : variant === 'gray' ? '#B0B0B0' : '#D5D8DD';
+  const styles = useStyles();
+  const C = useColors();
+  const tone = {
+    primary: { bg: C.primary, pressed: C.primaryPressed, text: C.onPrimary },
+    gray: { bg: C.grayButtonSoft, pressed: C.border, text: C.textStrong },
+    soft: { bg: C.primarySoft, pressed: C.primaryBorder, text: C.primaryStrong },
+  }[variant];
   return (
     <Pressable
       accessibilityRole="button"
@@ -133,15 +138,15 @@ export function Button({
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: pressed ? pressedBg : bg, borderRadius: radius },
-        variant === 'gray' && styles.buttonShadow,
+        { backgroundColor: pressed ? tone.pressed : tone.bg, borderRadius: radius },
+        variant === 'primary' && styles.buttonShadow,
         disabled && { opacity: 0.6 },
         style,
       ]}>
       <Text
         style={[
           styles.buttonText,
-          { color: variant === 'primary' ? '#FFFFFF' : Colors.black },
+          { color: tone.text },
           !bold && { fontWeight: '500' },
         ]}>
         {title}
@@ -151,6 +156,8 @@ export function Button({
 }
 
 export function Fab({ onPress, label, bottom = 24 }: { onPress: () => void; label: string; bottom?: number }) {
+  const styles = useStyles();
+  const C = useColors();
   return (
     <Pressable
       accessibilityRole="button"
@@ -158,7 +165,7 @@ export function Fab({ onPress, label, bottom = 24 }: { onPress: () => void; labe
       onPress={onPress}
       style={({ pressed }) => [
         styles.fab,
-        { bottom, backgroundColor: pressed ? Colors.redPressed : Colors.red },
+        { bottom, backgroundColor: pressed ? C.primaryPressed : C.primary },
       ]}>
       <PlusIcon />
     </Pressable>
@@ -182,6 +189,8 @@ export function Checkbox({
   borderColor?: string;
   label?: string;
 }) {
+  const styles = useStyles();
+  const C = useColors();
   return (
     <Pressable
       accessibilityRole="checkbox"
@@ -194,8 +203,8 @@ export function Checkbox({
         {
           width: size,
           height: size,
-          borderColor: checked ? Colors.red : borderColor,
-          backgroundColor: checked ? Colors.red : 'transparent',
+          borderColor: checked ? C.primary : borderColor,
+          backgroundColor: checked ? C.primary : 'transparent',
         },
       ]}>
       {checked && <CheckIcon size={size * 0.7} />}
@@ -214,7 +223,7 @@ export function SelectSheet({
   selected,
   onSelect,
   onClose,
-  accent = Colors.red,
+  accent: accentProp,
 }: {
   visible: boolean;
   title: string;
@@ -225,7 +234,10 @@ export function SelectSheet({
   /** Colour of the selected row. */
   accent?: string;
 }) {
+  const C = useColors();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
+  const accent = accentProp ?? C.primary;
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={styles.sheetBackdrop} onPress={onClose}>
@@ -262,7 +274,7 @@ export function SelectSheet({
 
 // ---------------------------------------------------------------------------
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ colors: C }) => ({
   header: {
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
@@ -276,20 +288,22 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', flexShrink: 1, marginRight: 8 },
+  // The logo gives way before the screen title does.
+  headerRight: { flexShrink: 2, alignItems: 'flex-end' },
   backButton: { marginRight: 18, padding: 2 },
-  headerTitle: { fontSize: 19, fontWeight: '700', color: Colors.black, letterSpacing: -0.3, flexShrink: 1 },
+  headerTitle: { fontSize: 19, fontWeight: '700', color: C.textStrong, letterSpacing: -0.3, flexShrink: 1 },
   headerTitleRoot: { fontSize: 22, marginLeft: 4 },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.inputBg,
+    backgroundColor: C.inputBg,
     borderRadius: 12,
     paddingHorizontal: 16,
     minHeight: 54,
     borderWidth: 1,
     borderColor: 'transparent',
   },
-  inputRowFocused: { borderColor: '#9CA3AF' },
+  inputRowFocused: { borderColor: C.primary, backgroundColor: C.card },
   inputIcon: { marginRight: 14, width: 24, alignItems: 'center' },
   input: {
     flex: 1,
@@ -301,7 +315,7 @@ const styles = StyleSheet.create({
   eyeButton: { marginLeft: 8, padding: 4 },
   button: { paddingVertical: 15, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
   buttonShadow: {
-    boxShadow: shadow(3, 12, 0.16),
+    boxShadow: shadow(3, 12, 0.22, C.primaryShadow),
   },
   buttonText: { fontSize: 16, fontWeight: '700' },
   fab: {
@@ -312,10 +326,10 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: shadow(4, 20, 0.4, Colors.red),
+    boxShadow: shadow(4, 20, 0.4, C.primary),
   },
-  checkbox: { borderWidth: 1.5, borderRadius: 2, alignItems: 'center', justifyContent: 'center' },
-  sheetBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+  checkbox: { borderWidth: 1.5, borderRadius: 5, alignItems: 'center', justifyContent: 'center' },
+  sheetBackdrop: { flex: 1, backgroundColor: C.overlay, justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 16,
@@ -331,8 +345,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#D1D5DB',
     marginBottom: 12,
   },
-  sheetTitle: { fontSize: 17, fontWeight: '700', color: Colors.black, paddingHorizontal: 20, paddingBottom: 8 },
-  sheetDivider: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.border, marginHorizontal: 20 },
+  sheetTitle: { fontSize: 17, fontWeight: '700', color: C.textStrong, paddingHorizontal: 20, paddingBottom: 8 },
+  sheetDivider: { height: StyleSheet.hairlineWidth, backgroundColor: C.border, marginHorizontal: 20 },
   sheetItem: {
     paddingHorizontal: 20,
     paddingVertical: 15,
@@ -340,6 +354,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  sheetItemText: { fontSize: 15, color: Colors.text },
-  sheetItemTextActive: { color: Colors.red, fontWeight: '600' },
-});
+  sheetItemText: { fontSize: 15, color: C.text },
+  sheetItemTextActive: { color: C.primary, fontWeight: '600' },
+}));

@@ -1,8 +1,7 @@
 import { router } from 'expo-router';
 import { type ReactNode, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, View } from 'react-native';
 
-import { SelectSheet } from '@/components/ui';
 import {
   BagIcon,
   BalanceIcon,
@@ -28,9 +27,11 @@ import {
   ToolButton,
   PortalHeader,
 } from '@/components/portal/ui';
-import { PortalColors as C } from '@/constants/theme';
+import { Text } from '@/components/text';
+import { SelectSheet } from '@/components/ui';
 import { paymentFigures, type VendorPayment } from '@/data/vendor';
 import { useVendorState } from '@/state/vendor-state';
+import { makeStyles, useColors } from '@/theme';
 import { formatAmount, formatDateTime, formatRs, formatSigned } from '@/utils/format';
 
 type Tab = 'payments' | 'transfers';
@@ -46,6 +47,8 @@ const INFO = {
 const GREEN = '#0F9D58';
 
 export default function AccountsScreen() {
+  const styles = useStyles();
+  const C = useColors();
   const { payments } = useVendorState();
   const [tab, setTab] = useState<Tab>('payments');
   const [searching, setSearching] = useState(false);
@@ -93,7 +96,7 @@ export default function AccountsScreen() {
 
         <View style={styles.toolbar}>
           <SearchCountBar
-            icon={<ReceiptIcon size={20} color={C.red} />}
+            icon={<ReceiptIcon size={20} color={C.primary} />}
             label={`${rows.length} ${rows.length === 1 ? noun : `${noun}s`}`}
             searching={searching}
             onToggleSearch={() => {
@@ -107,12 +110,12 @@ export default function AccountsScreen() {
           />
           {!searching && (
             <ToolButton label="Search payments" onPress={() => setSearching(true)}>
-              <SearchIcon size={21} color={C.red} />
+              <SearchIcon size={21} color={C.primary} />
             </ToolButton>
           )}
           {tab === 'payments' && (
             <ToolButton label="Filter payments" active={filter !== 'All payments'} onPress={() => setFilterSheet(true)}>
-              <SlidersIcon size={20} color={filter !== 'All payments' ? C.red : '#4B5563'} />
+              <SlidersIcon size={20} color={filter !== 'All payments' ? C.primary : '#4B5563'} />
             </ToolButton>
           )}
         </View>
@@ -125,7 +128,7 @@ export default function AccountsScreen() {
         renderItem={({ item }) => (tab === 'payments' ? <PaymentCard payment={item} /> : <TransferCard payment={item} />)}
         ListEmptyComponent={
           <EmptyState
-            icon={<ReceiptIcon size={30} color={C.red} />}
+            icon={<ReceiptIcon size={30} color={C.primary} />}
             title={tab === 'payments' ? 'No payments found' : 'No COD transfers yet'}
             message={
               q || filter !== 'All payments'
@@ -143,7 +146,7 @@ export default function AccountsScreen() {
         selected={filter}
         onSelect={(v) => setFilter(v as StatusFilter)}
         onClose={() => setFilterSheet(false)}
-        accent={C.red}
+        accent={C.primary}
       />
     </View>
   );
@@ -152,15 +155,19 @@ export default function AccountsScreen() {
 const openOrder = (orderId: string) => router.navigate({ pathname: '/vendor/orders', params: { q: orderId } });
 
 function OrderPill({ id }: { id: string }) {
+  const styles = useStyles();
+  const C = useColors();
   return (
     <View style={styles.orderPill}>
-      <BagIcon size={16} color={C.red} />
+      <BagIcon size={16} color={C.primary} />
       <Text style={styles.orderPillText}>#{id}</Text>
     </View>
   );
 }
 
 function PaymentCard({ payment: p }: { payment: VendorPayment }) {
+  const styles = useStyles();
+  const C = useColors();
   const { net, balance, completed } = paymentFigures(p);
   return (
     <Card style={styles.card}>
@@ -222,6 +229,8 @@ function PaymentCard({ payment: p }: { payment: VendorPayment }) {
 }
 
 function TransferCard({ payment: p }: { payment: VendorPayment }) {
+  const styles = useStyles();
+  const C = useColors();
   return (
     <Card style={styles.card}>
       <View style={styles.cardHeader}>
@@ -268,6 +277,7 @@ function Metric({
   value: string;
   color: string;
 }) {
+  const styles = useStyles();
   return (
     <View style={styles.metric} accessible accessibilityLabel={`${label}: ${value}`}>
       <IconTile bg={tint} size={34} radius={9}>
@@ -283,8 +293,8 @@ function Metric({
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#F8F9FA' },
+const useStyles = makeStyles(({ colors: C }) => ({
+  screen: { flex: 1, backgroundColor: C.screenBg },
   top: { paddingHorizontal: 14, paddingTop: 14, gap: 12 },
   tabs: { flexDirection: 'row', gap: 10 },
   bigChip: { paddingVertical: 12 },
@@ -307,9 +317,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 7,
-    backgroundColor: '#FEEFEF',
+    backgroundColor: C.primarySoft,
   },
-  orderPillText: { fontSize: 14, fontWeight: '700', color: C.red },
+  orderPillText: { fontSize: 14, fontWeight: '700', color: C.primary },
   metrics: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 16, paddingVertical: 8, rowGap: 12 },
   metric: { width: '50%', flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 8 },
   metricText: { flex: 1 },
@@ -331,4 +341,4 @@ const styles = StyleSheet.create({
   transferText: { flex: 1 },
   transferAmount: { fontSize: 16, fontWeight: '700', marginTop: 1 },
   transferDate: { fontSize: 11, color: C.muted, textAlign: 'right', maxWidth: 110 },
-});
+}));

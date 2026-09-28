@@ -14,7 +14,8 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { ChevronRightIcon } from '@/components/portal/icons';
-import { PortalColors as C, shadow } from '@/constants/theme';
+import { Text } from '@/components/text';
+import { shadow, useColors } from '@/theme';
 
 const KNOB = 52;
 const PAD = 4;
@@ -34,6 +35,7 @@ export function SwipeToConfirm({
   color?: string;
   disabled?: boolean;
 }) {
+  const C = useColors();
   const [width, setWidth] = useState(0);
   const x = useSharedValue(0);
   const max = Math.max(0, width - KNOB - PAD * 2);
@@ -75,9 +77,11 @@ export function SwipeToConfirm({
       style={[styles.track, { backgroundColor: disabled ? '#E5E7EB' : `${color}1F` }]}
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
       <Animated.View style={[styles.fill, { backgroundColor: color }, fillStyle]} />
-      <Animated.Text style={[styles.label, { color: disabled ? C.faint : color }, labelStyle]} numberOfLines={1}>
-        {label}
-      </Animated.Text>
+      <Animated.View style={[styles.labelWrap, labelStyle]}>
+        <Text style={[styles.label, { color: disabled ? C.faint : color }]} numberOfLines={1}>
+          {label}
+        </Text>
+      </Animated.View>
       <GestureDetector gesture={pan}>
         <Animated.View style={[styles.knob, { backgroundColor: disabled ? '#9CA3AF' : color }, knobStyle]}>
           <View style={styles.chevrons}>
@@ -93,7 +97,8 @@ export function SwipeToConfirm({
 const styles = StyleSheet.create({
   track: { height: KNOB + PAD * 2, borderRadius: (KNOB + PAD * 2) / 2, justifyContent: 'center', overflow: 'hidden' },
   fill: { position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: (KNOB + PAD * 2) / 2, opacity: 0.25 },
-  label: { position: 'absolute', left: KNOB + 16, right: 16, textAlign: 'center', fontSize: 15, fontWeight: '800', letterSpacing: 0.3 },
+  labelWrap: { position: 'absolute', left: KNOB + 16, right: 16, pointerEvents: 'none' },
+  label: { textAlign: 'center', fontSize: 15, fontWeight: '800', letterSpacing: 0.3 },
   knob: {
     position: 'absolute',
     left: PAD,
